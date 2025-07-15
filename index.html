@@ -129,22 +129,14 @@
     let currentZoomedDomain = null; //store domain key if zoomed, null if zoomed out
     let originalData = []; //store a copy of data
     
-    // --- CREATE STATIC BACKGROUND ELEMENTS ONCE ---
-    const backgroundArcInner = d3.arc()
+    const backgroundArc = d3.arc()
         .innerRadius(innerRadius)
-        .outerRadius(innerRadius + (outerRadius - innerRadius) / 2) // halfwayRadius
-        .startAngle(0)
-        .endAngle(2 * Math.PI);
-    
-    const backgroundArcOuter = d3.arc()
-        .innerRadius(innerRadius + (outerRadius - innerRadius) / 2) // halfwayRadius
-        .outerRadius(outerRadius)
+        .outerRadius(outerRadius) 
         .startAngle(0)
         .endAngle(2 * Math.PI);
     
     const backgroundGroup = svg.append("g").attr("class", "background");
-    backgroundGroup.append("path").attr("d", backgroundArcInner).attr("fill", "#deeff5");
-    backgroundGroup.append("path").attr("d", backgroundArcOuter).attr("fill", "#cde7f0");
+    backgroundGroup.append("path").attr("d", backgroundArc).attr("fill", "#f8f9fa");
     
     // --- CREATE STATIC CENTER CIRCLE ONCE ---
     const centerCircle = svg.append("circle")
@@ -227,7 +219,7 @@
         const allDomains = [...new Set(originalData.map(d => d.Domain))];
         const domainColor = d3.scaleOrdinal()
             .domain(allDomains)
-            .range(["#2ca02c", "#ff7f0e", "#ffd700", "#9467bd"]);
+            .range(["#003f5c", "#58508d", "#bc5090", "#ffa600"]);
     
         const groupedData = d3.nest()
             .key(d => d.Group)
@@ -305,6 +297,8 @@
             })
             // --- HOVER EFFECTS for Ideograms ---
             .on("mouseover", function(d) {
+                tooltip.style("opacity", 1)
+                    .html("<strong>Domain:</strong> " + d.values[0].Domain);
                 if (!currentZoomedDomain) { // Only apply hover if not already zoomed
                     const hoveredDomain = d.values[0].Domain;
     
@@ -323,7 +317,14 @@
                     d3.select(this).style("cursor", "pointer"); // Change cursor for the hovered ideogram
                 }
             })
+            .on("mousemove", function(event) {
+                tooltip.style("left", (d3.event.pageX + 15) + "px")
+                       .style("top", (d3.event.pageY - 20) + "px");
+            })
+            
             .on("mouseout", function(d) {
+                tooltip.style("opacity", 0);
+            
                 if (!currentZoomedDomain) { // Only remove hover if not already zoomed
                     // Remove highlight from all ideograms
                     ideogramGroup.selectAll("path.ideogram-path")
@@ -512,7 +513,6 @@
     
         // Enter new bars + Update existing bars
         bars.enter().append("path")
-            .attr("fill", d => +d.value < 1390 ? "red" : "#4682B4")
             .attr("fill-opacity", 0) // Start hidden
             .style("stroke", "black")
             .style("stroke-width", "0.3px")
@@ -532,6 +532,8 @@
                 d3.select(this).attr("fill-opacity", 0.7);
             })
             .merge(bars) // Merge enter and update selections
+            .attr("fill", d => domainColor(d.Domain))
+
             .transition(t) // Apply transition to new and updated bars
                 .attrTween("d", function(d) {
                     // Interpolate from _current (previous state) to final state
