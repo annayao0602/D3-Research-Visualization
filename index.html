@@ -96,7 +96,7 @@
         fill: #e0e0e0;
     }
     .ideogram-path:hover {
-        cursor: pointer; /* Change cursor to pointer */
+        cursor: pointer; 
     }
     /* New CSS class for highlighted elements */
     .highlighted-stroke {
@@ -161,8 +161,12 @@
             }
         });
     
-    
+    let x,y;
+
     function update(data, zoomDomain = null) {
+        
+        const oldX = x;
+
         const currentData = zoomDomain ? data.filter(d => d.Domain === zoomDomain) : data;
     
         const t = svg.transition().duration(750); // Define a global transition for this update cycle
@@ -173,22 +177,21 @@
             .attr("pointer-events", zoomDomain ? "auto" : "none");
     
     
-        // Standardize data and create unique IDs
         currentData.forEach((d, i) => {
-            d.uniqueId = d.Field + '-' + i;
+            d.uniqueId = d.Field;
             d.value = d.numpub;
         });
     
         const xDomain = currentData.map(d => d.uniqueId);
     
-        const x = d3.scaleBand()
+        x = d3.scaleBand()
             .domain(xDomain)
             .range([0, 2 * Math.PI])
             .align(0);
     
         const maxValue = 10000;
     
-        const y = d3.scaleLinear()
+        y = d3.scaleLinear()
             .range([innerRadius, outerRadius])
             .domain([0, maxValue])
             .clamp(true);
@@ -415,7 +418,7 @@
             .attr("transform", d => d._targetTextTransform)
             .style("text-anchor", d => d._targetTextAnchor);
     
-    
+    /*
         //tick marks
         let tickGroup = svg.select("g.tick-group");
         if (tickGroup.empty()) {
@@ -461,6 +464,7 @@
                 .attr("y1", outerRadius + 5)
                 .attr("y2", outerRadius + 11)
                 .style("opacity", 1);
+            */
             
         // ---- Draw the Inner Bars ----
         const barArc = d3.arc()
@@ -475,11 +479,15 @@
         const oldBarDataMap = new Map(barGroup.selectAll("path").data().map(d => [d.uniqueId, d]));
         currentData.forEach(d => {
             const oldBar = oldBarDataMap.get(d.uniqueId);
+
+            const startAngle = oldBar && oldX ? oldX(oldBar.uniqueId) : x(d.uniqueId);
+            const endAngle = oldBar && oldX ? oldX(oldBar.uniqueId) + oldX.bandwidth() : x(d.uniqueId);
+
             d._current = oldBar ? { // If existing, use its current properties
                 innerRadius: innerRadius,
-                outerRadius: y(+oldBar.value), // Use old value from oldBar
-                startAngle: x(oldBar.uniqueId),
-                endAngle: x(oldBar.uniqueId) + x.bandwidth()
+                outerRadius: y(+oldBar.value), 
+                startAngle: startAngle,
+                endAngle: endAngle
             } : { // If new, start collapsed at its final angular position
                 innerRadius: innerRadius,
                 outerRadius: innerRadius, // Collapsed radial size
