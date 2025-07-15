@@ -1,55 +1,126 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<title>D3 Circos Visualization</title>
-
+<title>D3 Research Visualization</title>
 <script src="https://d3js.org/d3.v4.js"></script>
 
-<div id="controls">
-    <label for="dataset-select">Choose a university:</label>
-    <select id="dataset-select">
-        <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/numpub.csv">UVA</option>
-        <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/VTech_numpub.csv">Virginia Tech</option>
-    </select>
 
-    <br><br>
-    <label>
-        <input type="checkbox" id="toggle-axes" checked> Show Axes
-    </label>
+<body>
 
-    <br><br>
-    <label>
-        <input type="checkbox" id="toggle-background" checked> Show Background
-    </label>
+    <div id="controls">
+        <label for="dataset-select">Choose a university:</label>
+        <select id="dataset-select">
+            <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/numpub.csv">UVA</option>
+            <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/VTech_numpub.csv">Virginia Tech</option>
+        </select>
+    
+        <br><br>
+        <label>
+            <input type="checkbox" id="toggle-axes" checked> Show Axes
+        </label>
+    
+        <br><br>
+        <label>
+            <input type="checkbox" id="toggle-background" checked> Show Background
+        </label>
+    </div>
+
+<div class="paper-layout">
+
+    <h1 id="chart-title"></h1>
+
+    <div class="contributors">
+        <p>
+            <b>Anna Yao</b><br>University of Virginia<br>annayao0602@gmail.com
+        </p>
+    </div>
+
+    <div class="abstract">
+        <h2>Abstract</h2>
+        <p>
+            This visualization project centers around taking a closer look at research publications from R1 research institutes 
+            such as UVA and Virginia Tech. Currently, it focuses on the raw number of publications grouped by four domains: 
+            Life Sciences, Health Sciences, Physical Sciences, and Social Sciences. Interactivity is built into the visualization to allow readers
+            to zoom in on each of these domains and get a closer look at each field of study. Clicking on the center of the visualization takes users back out 
+            to the original circle. The exact number of publications is visible by hovering
+            over a specific histogram bar to reveal the field and its publications. Users can choose different institutes, toggle axis, and toggle background 
+            through the top left box.
+        </p>
+    </div>
+
+
+    <div id="my_dataviz"></div>
+
+    <div class="description">
+        <p>Figure 1: D3 Visualization</p>
+    </div>
+
 </div>
-
-<h1 id="chart-title"></h1>
-
-
-<div id="my_dataviz"></div>
 
 <style>
     body {
         font-family: Georgia, Times, "Times New Roman", serif;        
-        display: flex; 
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
+        background-color: #2d2d2d;
         margin: 0;
+        padding: 0;
+    }
+    .paper-layout {
+        max-width: 850px;
+        margin: 2rem auto;
+        padding: 3rem;
+        background-color: #ffffff;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     #chart-title {
-        font-size: 24px;
-        font-weight: 300; 
-        color: #333;
-        margin: 0 0 10px 0; 
+        font-family: Georgia, Times, "Times New Roman", serif; 
+        font-size: 28px;
+        text-align: center;
+        font-weight: bold; 
+        color: #222;
+        border-top: 2px solid black;
+        border-bottom: 2px solid black;
+        padding: 0.5rem 0;
+        margin-bottom: 2rem; 
     }
-
-    #controls {
-        position: absolute;
-        top: 80px;
-        left: 20px;
+    .abstract h2 {
+        font-family: Georgia, Times, "Times New Roman", serif; 
+        font-size: 16px;
+        text-align: center;
+        margin-top: 2rem;
+    }
+    .abstract p {
+        text-align: justify;
+        line-height: 1.6;
+        width: 600px;
+        font-size: 15px;
+        margin: auto;
+        color: #333;
+    }
+    .contributors p {
+        text-align: center;
+        line-height: 1.6;
         font-size: 14px;
-        z-index: 10; 
+        color: #333;
+    }
+    .description p {
+        text-align: center;
+        font-size: 12px;
+        color: #333;
+    }
+    #controls {
+        position: fixed;
+        top: 3rem;
+        left: 0.5rem;
+        z-index: 10;
+        font-size: 14px;
+        border: 1px solid #e0e0e0;
+        padding: 0.5rem;
+        border-radius: 1px;
+        background-color: #fafafa;
+    }
+    #my_dataviz {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
     }
     .group-label {
         font-size: 9px;
@@ -98,7 +169,6 @@
     .ideogram-path:hover {
         cursor: pointer; 
     }
-    /* New CSS class for highlighted elements */
     .highlighted-stroke {
         stroke: black !important; /* Make sure it overrides other strokes */
         stroke-width: 0.7px !important; 
@@ -108,7 +178,7 @@
 <script>
 
     // defines the space around main charting area
-    const margin = {top: 75, right: 175, bottom: 150, left: 175};
+    const margin = {top: 100, right: 200, bottom: 150, left: 200};
     const width = 800 - margin.left - margin.right;
     const height = 700 - margin.top - margin.bottom;
     const innerRadius = 70;
@@ -582,3 +652,4 @@
     loadDataAndDraw();
     
     </script>
+</body>
