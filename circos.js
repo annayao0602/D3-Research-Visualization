@@ -5,10 +5,11 @@
 const CircosChart = function CircosChart(selector, main_data, options) {
 
     const cfg = {
-        margin: {top: 100, right: 200, bottom: 150, left: 200},
+        margin: {top: 100, right: 150, bottom: 150, left: 200},
         innerRadius: 70,
         maxValue: 0
     }
+
     cfg.width = 800 - cfg.margin.left - cfg.margin.right;
     cfg.height = 700 - cfg.margin.top - cfg.margin.bottom;
     cfg.outerRadius = Math.min(cfg.width, cfg.height) / 2;
@@ -18,25 +19,15 @@ const CircosChart = function CircosChart(selector, main_data, options) {
           if('undefined' !== typeof options[i]){ cfg[i] = options[i]; }
         }
       }
-    //find max val in data
-    let maxValue = 0;
-    for (let j=0; j < main_data.length; j++) {
-        for (let i = 0; i < main_data[j].axes.length; i++) {
-            main_data[j].axes[i]['id'] = main_data[j].name;
-            if (main_data[j].axes[i]['value'] > maxValue) {
-              maxValue = main_data[j].axes[i]['value'];
-            }
-        }
-    }
-    maxValue = max(cfg.maxValue, maxValue);
+    const maxValue = cfg.maxValue || d3.max(main_data, d => +d.numpub);
+    
 
-    const parent = d3.select(selector);
-
-    let svg = parent.append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom);
-    let g = svg.append("g")
-        .attr("transform", "translate(" + (width / 2 + margin.left) + "," + (height / 2 + margin.top) + ")");
+    const svg = d3.select(selector)
+        .append("svg")
+            .attr("width", cfg.width + cfg.margin.left + cfg.margin.right)
+            .attr("height", cfg.height + cfg.margin.top + cfg.margin.bottom)
+        .append("g")
+            .attr("transform", "translate(" + (cfg.width / 2 + cfg.margin.left) + "," + (cfg.height / 2 + cfg.margin.top) + ")");
 
     const tooltip = d3.select("body").append("div").attr("class", "tooltip");
 
@@ -45,8 +36,8 @@ const CircosChart = function CircosChart(selector, main_data, options) {
 
     //background element
     const backgroundArc = d3.arc()
-        .innerRadius(innerRadius)
-        .outerRadius(outerRadius)
+        .innerRadius(cfg.innerRadius)
+        .outerRadius(cfg.outerRadius)
         .startAngle(0)
         .endAngle(2* Math.PI);
 
@@ -56,7 +47,7 @@ const CircosChart = function CircosChart(selector, main_data, options) {
     // --- CREATE STATIC CENTER CIRCLE ONCE ---
     const centerCircle = svg.append("circle")
         .attr("class", "center-circle")
-        .attr("r", innerRadius - 5)
+        .attr("r", cfg.innerRadius - 5)
         .attr("cx", 0)
         .attr("cy", 0)
         .style("opacity", 0) 
@@ -71,7 +62,6 @@ const CircosChart = function CircosChart(selector, main_data, options) {
     let x,y;
     function update(data, zoomDomain = null) {
         const oldX = x;
-        //d.Domain: change to any column name to abstractify
         const currentData = zoomDomain ? data.filter(d => d.Domain === zoomDomain) : data;
 
         const t = svg.transition().duration(750);
@@ -82,9 +72,10 @@ const CircosChart = function CircosChart(selector, main_data, options) {
         
         currentData.forEach((d, i) => {
             d.value = d.numpub;
+            d.uniqueId = d.Field;
         });
 
-        const xDomain = currentData.map(d => d.Field);
+        const xDomain = currentData.map(d => d.uniqueId);
 
         x = d3.scaleBand()
             .domain(xDomain)
@@ -92,7 +83,7 @@ const CircosChart = function CircosChart(selector, main_data, options) {
             .align(0);
 
         y = d3.scaleLinear()
-            .range([innerRadius, outerRadius])
+            .range([cfg.innerRadius, cfg.outerRadius])
             .domain([0, maxValue])
             .clamp(true);
 
@@ -132,8 +123,8 @@ const CircosChart = function CircosChart(selector, main_data, options) {
         const oldGroupedDataMap = new Map(svg.selectAll("g.ideogram-group path").data().map(d => [d.key, d])); 
 
         groupedData.forEach(group => {
-            group.startAngle = x(group.values[0].Field);
-            const lastFieldInGroup = group.values[group.values.length - 1].Field;
+            group.startAngle = x(group.values[0].uniqueId);
+            const lastFieldInGroup = group.values[group.values.length - 1].uniqueId;
             group.endAngle = x(lastFieldInGroup) + x.bandwidth();
 
             const oldGroup = oldGroupedDataMap.get(group.key);
@@ -141,23 +132,23 @@ const CircosChart = function CircosChart(selector, main_data, options) {
                 group._current = { 
                     startAngle: oldGroup.startAngle,
                     endAngle: oldGroup.endAngle,
-                    innerRadius: outerRadius + 5,
-                    outerRadius: outerRadius + 11
+                    innerRadius: cfg.outerRadius + 5,
+                    outerRadius: cfg.outerRadius + 11
                 };
             } else {
                 group._current = {
                     startAngle: group.startAngle,
                     endAngle: group.startAngle, 
-                    innerRadius: outerRadius + 5,
-                    outerRadius: outerRadius + 11 
+                    innerRadius: cfg.outerRadius + 5,
+                    outerRadius: cfg.outerRadius + 11 
                 };
             }
         });
 
         // --- OUTER RING ---
         const ideogramArc = d3.arc()
-            .innerRadius(outerRadius + 5)
-            .outerRadius(outerRadius + 11)
+            .innerRadius(cfg.outerRadius + 5)
+            .outerRadius(cfg.outerRadius + 11)
             .padAngle(0.01);
 
         let ideogramGroup = svg.select("g.ideogram-group");
@@ -260,8 +251,8 @@ const CircosChart = function CircosChart(selector, main_data, options) {
 
         groupedData.forEach(d => {
             const oldElement = oldLabelPositionsMap.get(d.key); 
-            d._currentTransform = oldElement ? d3.select(oldElement).attr("transform") : `rotate(${(d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90}) translate(${outerRadius + 20},0) scale(0)`; // Start collapsed
-            d._targetTransform = `rotate(${(d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90}) translate(${outerRadius + 20},0) scale(1)`; // End at full size
+            d._currentTransform = oldElement ? d3.select(oldElement).attr("transform") : `rotate(${(d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90}) translate(${cfg.outerRadius + 20},0) scale(0)`; // Start collapsed
+            d._targetTransform = `rotate(${(d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90}) translate(${cfg.outerRadius + 20},0) scale(1)`; // End at full size
     
             const oldAngle = oldElement ? ((oldElement.startAngle + oldElement.endAngle) / 2 * 180 / Math.PI - 90) : ((d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90);
             const newAngle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90;
@@ -278,7 +269,7 @@ const CircosChart = function CircosChart(selector, main_data, options) {
             .style("opacity", 0)
             .attr("transform", d => { 
                 const angle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90;
-                const radius = outerRadius + 20;
+                const radius = cfg.outerRadius + 20;
                 return `rotate(${angle}) translate(${radius},0) scale(0)`; 
             })
             .remove();
@@ -305,30 +296,30 @@ const CircosChart = function CircosChart(selector, main_data, options) {
 
         // --- INNER BARS ---
         const barArc = d3.arc()
-            .innerRadius(innerRadius); 
+            .innerRadius(cfg.innerRadius); 
     
         let barGroup = svg.select("g.bar-group");
         if (barGroup.empty()) {
             barGroup = svg.append("g").attr("class", "bar-group");
         }
 
-        const oldBarDataMap = new Map(barGroup.selectAll("path").data().map(d => [d.Field, d]));
+        const oldBarDataMap = new Map(barGroup.selectAll("path").data().map(d => [d.uniqueId, d]));
         currentData.forEach(d => {
-            const oldBar = oldBarDataMap.get(d.Field);
+            const oldBar = oldBarDataMap.get(d.uniqueId);
 
-            const startAngle = oldBar && oldX ? oldX(oldBar.Field) : x(d.Field);
-            const endAngle = oldBar && oldX ? oldX(oldBar.Field) + oldX.bandwidth() : x(d.Field);
+            const startAngle = oldBar && oldX ? oldX(oldBar.uniqueId) : x(d.uniqueId);
+            const endAngle = oldBar && oldX ? oldX(oldBar.uniqueId) + oldX.bandwidth() : x(d.uniqueId);
 
             d._current = oldBar ? { 
-                innerRadius: innerRadius,
+                innerRadius: cfg.innerRadius,
                 outerRadius: y(+oldBar.value), 
                 startAngle: startAngle,
                 endAngle: endAngle
             } : { 
-                innerRadius: innerRadius,
-                outerRadius: innerRadius, 
-                startAngle: x(d.Field),
-                endAngle: x(d.Field) 
+                innerRadius: cfg.innerRadius,
+                outerRadius: cfg.innerRadius, 
+                startAngle: x(d.uniqueId),
+                endAngle: x(d.uniqueId) 
             };
         });
 
@@ -337,8 +328,8 @@ const CircosChart = function CircosChart(selector, main_data, options) {
     
         bars.exit().transition(t)
             .attrTween("d", function(d) { 
-                const i = d3.interpolateObject({ innerRadius: innerRadius, outerRadius: y(+d.value), startAngle: x(d.Field), endAngle: x(d.Field) + x.bandwidth() },
-                                              { innerRadius: innerRadius, outerRadius: innerRadius, startAngle: x(d.Field), endAngle: x(d.Field) });
+                const i = d3.interpolateObject({ innerRadius: cfg.innerRadius, outerRadius: y(+d.value), startAngle: x(d.uniqueId), endAngle: x(d.uniqueId) + x.bandwidth() },
+                                              { innerRadius: cfg.innerRadius, outerRadius: cfg.innerRadius, startAngle: x(d.uniqueId), endAngle: x(d.uniqueId) });
                 return function(t_val) { return barArc(i(t_val)); };
             })
             .style("opacity", 0)
@@ -348,10 +339,10 @@ const CircosChart = function CircosChart(selector, main_data, options) {
             .attr("fill-opacity", 0) 
             .style("stroke", "black")
             .style("stroke-width", "0.3px")
-            .attr("d", d => barArc({ innerRadius: innerRadius, outerRadius: innerRadius, startAngle: x(d.Field), endAngle: x(d.Field) }))
+            .attr("d", d => barArc({ innerRadius: cfg.innerRadius, outerRadius: cfg.innerRadius, startAngle: x(d.uniqueId), endAngle: x(d.uniqueId) }))
             .on("mouseover", function(d) {
                 tooltip.style("opacity", 1);
-                tooltip.html(`<strong>${d.Field}</strong><br>Value: ${parseInt(d.value).toLocaleString()}`);
+                tooltip.html(`<strong>${d.uniqueId}</strong><br>Value: ${parseInt(d.value).toLocaleString()}`);
                 d3.select(this).attr("fill-opacity", 1);
             })
             .on("mousemove", function(event) {
@@ -368,7 +359,7 @@ const CircosChart = function CircosChart(selector, main_data, options) {
             .transition(t) 
                 .attrTween("d", function(d) {
                     const i = d3.interpolateObject(d._current, {
-                        innerRadius: innerRadius,
+                        innerRadius: cfg.innerRadius,
                         outerRadius: y(+d.value),
                         startAngle: x(d.uniqueId),
                         endAngle: x(d.uniqueId) + x.bandwidth()

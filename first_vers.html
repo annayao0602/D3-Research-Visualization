@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>D3 Research Visualization</title>
+<script src="https://d3js.org/d3.v4.js"></script>
+
+
+<body>
+
+    <div id="controls">
+        <label for="dataset-select">Choose a university:</label>
+        <select id="dataset-select">
+            <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/numpub.csv">UVA</option>
+            <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/VTech_numpub.csv">Virginia Tech</option>
+        </select>
+    
+        <br><br>
+        <label>
+            <input type="checkbox" id="toggle-axes" checked> Show Axes
+        </label>
+    
+        <br><br>
+        <label>
+            <input type="checkbox" id="toggle-background" checked> Show Background
+        </label>
+    </div>
+
+<div class="paper-layout">
+
+    <h1 id="chart-title"></h1>
+
+    <div class="contributors">
+        <p>
+            <b>Anna Yao</b><br>University of Virginia<br>annayao0602@gmail.com
+        </p>
+    </div>
+
+    <div class="abstract">
+        <h2>Abstract</h2>
+        <p>
+            This visualization project centers around taking a closer look at research publications from R1 research institutes 
+            such as UVA and Virginia Tech. Currently, it focuses on the raw number of publications grouped by four domains: 
+            Life Sciences, Health Sciences, Physical Sciences, and Social Sciences. Interactivity is built into the visualization to allow readers
+            to zoom in on each of these domains and get a closer look at each field of study. Clicking on the center of the visualization takes users back out 
+            to the original circle. The exact number of publications is visible by hovering
+            over a specific histogram bar to reveal the field and its publications. Users can choose different institutes, toggle axis, and toggle background 
+            through the top left box.
+        </p>
+    </div>
+
+
+    <div id="my_dataviz"></div>
+
+    <div class="description">
+        <p>Figure 1: D3 Visualization</p>
+    </div>
+
+</div>
+
+<style>
+    body {
+        font-family: Georgia, Times, "Times New Roman", serif;        
+        background-color: #2d2d2d;
+        margin: 0;
+        padding: 0;
+    }
+    .paper-layout {
+        max-width: 850px;
+        margin: 2rem auto;
+        padding: 3rem;
+        background-color: #ffffff;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #chart-title {
+        font-family: Georgia, Times, "Times New Roman", serif; 
+        font-size: 28px;
+        text-align: center;
+        font-weight: bold; 
+        color: #222;
+        border-top: 2px solid black;
+        border-bottom: 2px solid black;
+        padding: 0.5rem 0;
+        margin-bottom: 2rem; 
+    }
+    .abstract h2 {
+        font-family: Georgia, Times, "Times New Roman", serif; 
+        font-size: 16px;
+        text-align: center;
+        margin-top: 2rem;
+    }
+    .abstract p {
+        text-align: justify;
+        line-height: 1.6;
+        width: 600px;
+        font-size: 15px;
+        margin: auto;
+        color: #333;
+    }
+    .contributors p {
+        text-align: center;
+        line-height: 1.6;
+        font-size: 14px;
+        color: #333;
+    }
+    .description p {
+        text-align: center;
+        font-size: 12px;
+        color: #333;
+    }
+    #controls {
+        position: fixed;
+        top: 3rem;
+        left: 0.5rem;
+        z-index: 10;
+        font-size: 14px;
+        border: 1px solid #e0e0e0;
+        padding: 0.5rem;
+        border-radius: 1px;
+        background-color: #fafafa;
+    }
+    #my_dataviz {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    .group-label {
+        font-size: 9px;
+        font-weight: 200;
+        pointer-events: none;
+    }
+    .field-label {
+        font-size: 9px;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px #fff, -1px -1px 2px #fff, 1px -1px 2px #fff, -1px 1px 2px #fff;
+        pointer-events: none;
+        transition: opacity 0.2s ease-in-out;
+    }
+    .tooltip {
+        position: absolute;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 14px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease-out;
+    }
+    .grid-circle {
+        fill: none;
+        stroke: #7e7e7e;
+        stroke-dasharray: 2,2;
+        stroke-width: 0.3px;
+    }
+    .axis-hidden {
+        display: none;
+    }
+    .background-hidden {
+        display: none;
+    }
+    .center-circle {
+        fill: #ffffff;
+        stroke: #ccc;
+        stroke-width: 1px;
+        cursor: pointer; 
+    }
+    .center-circle:hover {
+        fill: #e0e0e0;
+    }
+    .ideogram-path:hover {
+        cursor: pointer; 
+    }
+    .highlighted-stroke {
+        stroke: black !important; /* Make sure it overrides other strokes */
+        stroke-width: 0.7px !important; 
+    }
+</style>
+
+<script>
+
+    // defines the space around main charting area
+    const margin = {top: 100, right: 200, bottom: 150, left: 200};
+    const width = 800 - margin.left - margin.right;
+    const height = 700 - margin.top - margin.bottom;
+    const innerRadius = 70;
+    const outerRadius = Math.min(width, height) / 2;
+    
+    const svg = d3.select("#my_dataviz")
+      .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        //moves group origin from top left corner to center of svg canvas
+        .attr("transform", "translate(" + (width / 2 + margin.left) + "," + (height / 2 + margin.top) + ")");
+    
+    //html element that will be used to dsiplay info on hover
+    const tooltip = d3.select("body").append("div").attr("class", "tooltip");
+    
+    // ---New Global Variables for Zoom---
+    let currentZoomedDomain = null; //store domain key if zoomed, null if zoomed out
+    let originalData = []; //store a copy of data
+    
+    const backgroundArc = d3.arc()
+        .innerRadius(innerRadius)
+        .outerRadius(outerRadius) 
+        .startAngle(0)
+        .endAngle(2 * Math.PI);
+    
+    const backgroundGroup = svg.append("g").attr("class", "background");
+    backgroundGroup.append("path").attr("d", backgroundArc).attr("fill", "#f8f9fa");
+    
+    // --- CREATE STATIC CENTER CIRCLE ONCE ---
+    const centerCircle = svg.append("circle")
+        .attr("class", "center-circle")
+        .attr("r", innerRadius - 5)
+        .attr("cx", 0)
+        .attr("cy", 0)
+        .style("opacity", 0) // Initially hidden
+        .attr("pointer-events", "none") // Initially non-interactive
+        .on("click", function() {
+            if (currentZoomedDomain) {
+                currentZoomedDomain = null; //reset
+                update(originalData); // Trigger redraw
+            }
+        });
+    
+    let x,y;
+
+    function update(data, zoomDomain = null) {
+        
+        const oldX = x;
+
+        const currentData = zoomDomain ? data.filter(d => d.Domain === zoomDomain) : data;
+    
+        const t = svg.transition().duration(750); // Define a global transition for this update cycle
+    
+        // Manage visibility of center circle based on zoom state
+        centerCircle.transition(t)
+            .style("opacity", zoomDomain ? 1 : 0)
+            .attr("pointer-events", zoomDomain ? "auto" : "none");
+    
+    
+        currentData.forEach((d, i) => {
+            d.uniqueId = d.Field;
+            d.value = d.numpub;
+        });
+    
+        const xDomain = currentData.map(d => d.uniqueId);
+    
+        x = d3.scaleBand()
+            .domain(xDomain)
+            .range([0, 2 * Math.PI])
+            .align(0);
+    
+        const maxValue = 10000;
+    
+        y = d3.scaleLinear()
+            .range([innerRadius, outerRadius])
+            .domain([0, maxValue])
+            .clamp(true);
+    
+        // --- AXES LINES ---
+        let yAxisGroup = svg.select("g.axis");
+        if (yAxisGroup.empty()) {
+            yAxisGroup = svg.append("g").attr("class", "axis");
+        }
+    
+        const gridData = y.ticks(8).slice(1);
+    
+        const gridCircles = yAxisGroup.selectAll(".grid-circle")
+            .data(gridData, d => d); // Use data value as key for object constancy
+    
+        // Exit old circles
+        gridCircles.exit().transition(t)
+            .attr("r", 0) // Shrink to 0 radius
+            .style("opacity", 0) // Fade out (still useful for exit)
+            .remove();
+    
+        // Enter new circles
+        gridCircles.enter().append("circle")
+            .attr("class", "grid-circle")
+            .attr("r", 0) // Start at 0 radius
+            .style("opacity", 0) // Start hidden
+            .merge(gridCircles) // Merge enter and update selections
+            .transition(t) // Apply transition to new and updated circles
+            .attr("r", d => y(d)) // Animate to final radius
+            .style("opacity", 1); // Fade in
+    
+    
+        const allDomains = [...new Set(originalData.map(d => d.Domain))];
+        const domainColor = d3.scaleOrdinal()
+            .domain(allDomains)
+            .range(["#003f5c", "#58508d", "#bc5090", "#ffa600"]);
+    
+        const groupedData = d3.nest()
+            .key(d => d.Group)
+            .entries(currentData);
+    
+        // Prepare data for transitions: calculate current angles based on previous state if available
+        const oldGroupedDataMap = new Map(svg.selectAll("g.ideogram-group path").data().map(d => [d.key, d])); // Map of existing elements keyed by group name
+    
+        groupedData.forEach(group => {
+            group.startAngle = x(group.values[0].uniqueId);
+            const lastFieldInGroup = group.values[group.values.length - 1].uniqueId;
+            group.endAngle = x(lastFieldInGroup) + x.bandwidth();
+    
+            // Initialize _current property for transition interpolation
+            // For existing elements, _current is their current (previous) state.
+            // For new (entering) elements, _current is a collapsed state at their target startAngle.
+            const oldGroup = oldGroupedDataMap.get(group.key);
+            if (oldGroup) {
+                group._current = { // Store only relevant properties for interpolation
+                    startAngle: oldGroup.startAngle,
+                    endAngle: oldGroup.endAngle,
+                    innerRadius: outerRadius + 5,
+                    outerRadius: outerRadius + 11
+                };
+            } else {
+                // New group: start collapsed at its final startAngle
+                group._current = {
+                    startAngle: group.startAngle,
+                    endAngle: group.startAngle, // Collapsed
+                    innerRadius: outerRadius + 5,
+                    outerRadius: outerRadius + 11 // Maintain radii during collapse
+                };
+            }
+        });
+    
+        // ---- Draw the Outer Ring Segments (Ideograms) ----
+        const ideogramArc = d3.arc()
+            .innerRadius(outerRadius + 5)
+            .outerRadius(outerRadius + 11)
+            .padAngle(0.01);
+    
+        let ideogramGroup = svg.select("g.ideogram-group");
+        if (ideogramGroup.empty()) {
+            ideogramGroup = svg.append("g").attr("class", "ideogram-group");
+        }
+    
+        const ideogramPaths = ideogramGroup.selectAll("path")
+            .data(groupedData, d => d.key); // Key by group name for object constancy
+    
+        // Exit old ideograms
+        ideogramPaths.exit().transition(t)
+            .attrTween("d", function(d) {
+                // Tween to a collapsed state (startAngle = endAngle) before removing
+                const i = d3.interpolateObject({ startAngle: d.startAngle, endAngle: d.endAngle, innerRadius: ideogramArc.innerRadius()(), outerRadius: ideogramArc.outerRadius()() },
+                                              { startAngle: d.startAngle, endAngle: d.startAngle, innerRadius: ideogramArc.innerRadius()(), outerRadius: ideogramArc.outerRadius()() });
+                return function(t_val) { return ideogramArc(i(t_val)); };
+            })
+            .style("opacity", 0) // Fade out during collapse
+            .remove();
+    
+        // Enter new ideograms + Update existing ideograms
+        ideogramPaths.enter().append("path")
+            .attr("fill", d => domainColor(d.values[0].Domain))
+            .style("stroke", "black")
+            .style("stroke-width", "0.3px")
+            .style("opacity", 0) // Start hidden, will fade in
+            // Initial state for new elements is collapsed at their final start angle
+            .attr("d", d => ideogramArc({ startAngle: d.startAngle, endAngle: d.startAngle, innerRadius: ideogramArc.innerRadius()(), outerRadius: ideogramArc.outerRadius()() }))
+            .attr("class", "ideogram-path") // Add a class for easier selection
+            .on("click", function(d) {
+                if (!currentZoomedDomain) {
+                    currentZoomedDomain = d.values[0].Domain;
+                    update(originalData, currentZoomedDomain);
+                }
+            })
+            // --- HOVER EFFECTS for Ideograms ---
+            .on("mouseover", function(d) {
+                tooltip.style("opacity", 1)
+                    .html("<strong>Domain:</strong> " + d.values[0].Domain);
+                if (!currentZoomedDomain) { // Only apply hover if not already zoomed
+                    const hoveredDomain = d.values[0].Domain;
+    
+                    // Highlight ideograms of the same domain
+                    ideogramGroup.selectAll("path.ideogram-path")
+                        .filter(ideogramD => ideogramD.values[0].Domain === hoveredDomain)
+                        .classed("highlighted-stroke", true);
+    
+                    // Highlight group labels of the same domain
+                    groupLabelGroup.selectAll("g.group-label-container")
+                        .filter(labelD => labelD.values[0].Domain === hoveredDomain)
+                        .select("text") // Select the text element within the group
+                        .style("font-weight", "bold")
+                        .style("fill", "#000"); // Darker text color
+    
+                    d3.select(this).style("cursor", "pointer"); // Change cursor for the hovered ideogram
+                }
+            })
+            .on("mousemove", function(event) {
+                tooltip.style("left", (d3.event.pageX + 15) + "px")
+                       .style("top", (d3.event.pageY - 20) + "px");
+            })
+            
+            .on("mouseout", function(d) {
+                tooltip.style("opacity", 0);
+            
+                if (!currentZoomedDomain) { // Only remove hover if not already zoomed
+                    // Remove highlight from all ideograms
+                    ideogramGroup.selectAll("path.ideogram-path")
+                        .classed("highlighted-stroke", false);
+    
+                    // Remove highlight from all group labels
+                    groupLabelGroup.selectAll("g.group-label-container")
+                        .select("text")
+                        .style("font-weight", null) // Reset to default (or whatever was set by CSS)
+                        .style("fill", null); // Reset to default
+    
+                    d3.select(this).style("cursor", "default"); // Reset cursor
+                }
+            })
+            .merge(ideogramPaths) // Merge enter and update selections
+            .transition(t)
+                .attrTween("d", function(d) {
+                    // Interpolate from _current (previous state) to final state
+                    const i = d3.interpolateObject(d._current, {
+                        startAngle: d.startAngle,
+                        endAngle: d.endAngle,
+                        innerRadius: ideogramArc.innerRadius()(),
+                        outerRadius: ideogramArc.outerRadius()()
+                    });
+                    return function(t_val) { return ideogramArc(i(t_val)); };
+                })
+                .style("opacity", 1);
+    
+    
+        // Draw the outer arc labels (Group labels)
+        let groupLabelGroup = svg.select("g.group-label-group");
+        if (groupLabelGroup.empty()) {
+            groupLabelGroup = svg.append("g").attr("class", "group-label-group");
+        }
+    
+        // Get current data points for labels to store their positions for smooth transitions
+        // Use a more specific selector to avoid grabbing other groups
+        const oldLabelPositionsMap = new Map(
+            groupLabelGroup.selectAll("g.group-label-container")
+                           .data()
+                           .map(d => [d.key, d.element]) // Store the DOM element itself
+        );
+    
+        groupedData.forEach(d => {
+            const oldElement = oldLabelPositionsMap.get(d.key); // Get the old DOM element
+            // Store current and target transform/text-anchor values
+            d._currentTransform = oldElement ? d3.select(oldElement).attr("transform") : `rotate(${(d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90}) translate(${outerRadius + 20},0) scale(0)`; // Start collapsed
+            d._targetTransform = `rotate(${(d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90}) translate(${outerRadius + 20},0) scale(1)`; // End at full size
+    
+            const oldAngle = oldElement ? ((oldElement.startAngle + oldElement.endAngle) / 2 * 180 / Math.PI - 90) : ((d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90);
+            const newAngle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90;
+            d._currentTextAnchor = oldElement ? d3.select(oldElement).select("text").style("text-anchor") : (oldAngle > 90 && oldAngle < 270 ? "end" : "start");
+            d._targetTextAnchor = (newAngle > 90 && newAngle < 270 ? "end" : "start");
+            d._currentTextTransform = oldElement ? d3.select(oldElement).select("text").attr("transform") : (oldAngle > 90 && oldAngle < 270 ? "rotate(180)" : "rotate(0)");
+            d._targetTextTransform = (newAngle > 90 && newAngle < 270 ? "rotate(180)" : "rotate(0)");
+        });
+    
+    
+        const groupLabels = groupLabelGroup.selectAll("g.group-label-container")
+            .data(groupedData, d => d.key); // Key by group name
+    
+        // Exit old labels
+        groupLabels.exit().transition(t)
+            .style("opacity", 0)
+            .attr("transform", d => { // Animate to collapse at center of old segment
+                const angle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90;
+                const radius = outerRadius + 20;
+                return `rotate(${angle}) translate(${radius},0) scale(0)`; // Shrink and fade
+            })
+            .remove();
+    
+        // Enter new labels
+        const enteringLabels = groupLabels.enter().append("g")
+            .attr("class", "group-label-container")
+            .style("opacity", 0) // Start hidden
+            .attr("transform", d => d._currentTransform); // Start from its initial collapsed transform
+    
+        enteringLabels.append("text")
+            .text(d => d.key)
+            .attr("class", "group-label")
+            .style("alignment-baseline", "middle");
+    
+        // Update existing labels and enter new ones
+        groupLabels.merge(enteringLabels)
+            .each(function(d) { d.element = this; }) // Store the DOM element on the data for next update cycle
+            .transition(t)
+                .attr("transform", d => d._targetTransform) // Animate to final position
+                .style("opacity", 1);
+    
+    
+        groupLabels.merge(enteringLabels).select("text").transition(t)
+            .attr("transform", d => d._targetTextTransform)
+            .style("text-anchor", d => d._targetTextAnchor);
+            
+        // ---- Draw the Inner Bars ----
+        const barArc = d3.arc()
+            .innerRadius(innerRadius); // outerRadius, startAngle, endAngle will be interpolated
+    
+        let barGroup = svg.select("g.bar-group");
+        if (barGroup.empty()) {
+            barGroup = svg.append("g").attr("class", "bar-group");
+        }
+    
+        // Prepare data for bar transitions
+        const oldBarDataMap = new Map(barGroup.selectAll("path").data().map(d => [d.uniqueId, d]));
+        currentData.forEach(d => {
+            const oldBar = oldBarDataMap.get(d.uniqueId);
+
+            const startAngle = oldBar && oldX ? oldX(oldBar.uniqueId) : x(d.uniqueId);
+            const endAngle = oldBar && oldX ? oldX(oldBar.uniqueId) + oldX.bandwidth() : x(d.uniqueId);
+
+            d._current = oldBar ? { // If existing, use its current properties
+                innerRadius: innerRadius,
+                outerRadius: y(+oldBar.value), 
+                startAngle: startAngle,
+                endAngle: endAngle
+            } : { // If new, start collapsed at its final angular position
+                innerRadius: innerRadius,
+                outerRadius: innerRadius, // Collapsed radial size
+                startAngle: x(d.uniqueId),
+                endAngle: x(d.uniqueId) // Collapsed angular size
+            };
+        });
+    
+    
+        const bars = barGroup.selectAll("path")
+            .data(currentData, d => d.uniqueId); // Key by uniqueId
+    
+        // Exit old bars
+        bars.exit().transition(t)
+            .attrTween("d", function(d) { // Tween to collapsed state
+                const i = d3.interpolateObject({ innerRadius: innerRadius, outerRadius: y(+d.value), startAngle: x(d.uniqueId), endAngle: x(d.uniqueId) + x.bandwidth() },
+                                              { innerRadius: innerRadius, outerRadius: innerRadius, startAngle: x(d.uniqueId), endAngle: x(d.uniqueId) });
+                return function(t_val) { return barArc(i(t_val)); };
+            })
+            .style("opacity", 0)
+            .remove();
+    
+        // Enter new bars + Update existing bars
+        bars.enter().append("path")
+            .attr("fill-opacity", 0) // Start hidden
+            .style("stroke", "black")
+            .style("stroke-width", "0.3px")
+            // Initial state for new elements (collapsed at target position)
+            .attr("d", d => barArc({ innerRadius: innerRadius, outerRadius: innerRadius, startAngle: x(d.uniqueId), endAngle: x(d.uniqueId) }))
+            .on("mouseover", function(d) {
+                tooltip.style("opacity", 1);
+                tooltip.html(`<strong>${d.Field}</strong><br>Value: ${parseInt(d.value).toLocaleString()}`);
+                d3.select(this).attr("fill-opacity", 1);
+            })
+            .on("mousemove", function(event) {
+                tooltip.style("left", (d3.event.pageX + 15) + "px")
+                       .style("top", (d3.event.pageY - 20) + "px");
+            })
+            .on("mouseout", function(d) {
+                tooltip.style("opacity", 0);
+                d3.select(this).attr("fill-opacity", 0.7);
+            })
+            .merge(bars) // Merge enter and update selections
+            .attr("fill", d => domainColor(d.Domain))
+
+            .transition(t) // Apply transition to new and updated bars
+                .attrTween("d", function(d) {
+                    // Interpolate from _current (previous state) to final state
+                    const i = d3.interpolateObject(d._current, {
+                        innerRadius: innerRadius,
+                        outerRadius: y(+d.value),
+                        startAngle: x(d.uniqueId),
+                        endAngle: x(d.uniqueId) + x.bandwidth()
+                    });
+                    return function(t_val) { return barArc(i(t_val)); };
+                })
+                .attr("fill-opacity", 0.7);
+        
+            toggleAxesVisibility();
+            toggleBackgroundVisibility();
+    
+        }
+    
+    function toggleAxesVisibility() {
+        const isChecked = d3.select("#toggle-axes").property("checked");
+        svg.select(".axis").classed("axis-hidden", !isChecked);
+    }
+    
+    function loadDataAndDraw() {
+        const selectedFile = d3.select("#dataset-select").property("value");
+        const selectedUniversity = d3.select("#dataset-select option:checked").text();
+        d3.select("#chart-title").text("Research Publications at " + selectedUniversity);
+        d3.csv(selectedFile, function(error, data) {
+            if (error) throw error;
+            originalData = data;
+            currentZoomedDomain = null;
+            update(originalData);
+        });
+    }
+    
+    function toggleBackgroundVisibility() {
+        const isChecked = d3.select("#toggle-background").property("checked");
+        svg.select(".background").classed("background-hidden", !isChecked);
+    }
+    
+    d3.select("#dataset-select").on("change", loadDataAndDraw);
+    d3.select("#toggle-axes").on("change", toggleAxesVisibility);
+    d3.select("#toggle-background").on("change", toggleBackgroundVisibility);
+    
+    // Load the initial data
+    loadDataAndDraw();
+    
+    </script>
+</body>

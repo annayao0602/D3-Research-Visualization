@@ -59,7 +59,7 @@ body {
     background-color: #fafafa;
 }
 #my_dataviz {
-    display: flex;
+    display: center;
     justify-content: center;
     margin-top: 2rem;
 }
@@ -111,6 +111,6 @@ body {
     cursor: pointer; 
 }
 .highlighted-stroke {
-    stroke: black !important; /* Make sure it overrides other strokes */
+    stroke: black !important; 
     stroke-width: 0.7px !important; 
 }
