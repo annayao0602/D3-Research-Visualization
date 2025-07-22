@@ -488,54 +488,6 @@
         groupLabels.merge(enteringLabels).select("text").transition(t)
             .attr("transform", d => d._targetTextTransform)
             .style("text-anchor", d => d._targetTextAnchor);
-    
-    /*
-        //tick marks
-        let tickGroup = svg.select("g.tick-group");
-        if (tickGroup.empty()) {
-            tickGroup = svg.append("g").attr("class", "tick-group");
-        }
-    
-        // Prepare data for tick transitions
-        const oldTickDataMap = new Map(tickGroup.selectAll("line").data().map(d => [d.uniqueId, d]));
-        currentData.forEach(d => {
-            const oldTick = oldTickDataMap.get(d.uniqueId);
-            d._currentY1 = oldTick ? oldTick.y1 : innerRadius; // Store old y1 for current tick
-            d._currentY2 = oldTick ? oldTick.y2 : innerRadius; // Store old y2 for current tick
-            d._currentTransform = oldTick ? d3.select(oldTick.element).attr("transform") : `rotate(${(x(d.uniqueId) + x.bandwidth() / 2) * 180 / Math.PI - 90})`; // Store old transform
-            d.element = oldTick ? oldTick.element : null; // Store the actual DOM element
-        });
-    
-    
-        const ticks = tickGroup.selectAll("line")
-            .data(currentData, d => d.uniqueId); // Key by uniqueId
-    
-        // Exit old ticks
-        ticks.exit().transition(t)
-            .attr("y1", innerRadius) // Collapse to inner radius
-            .attr("y2", innerRadius)
-            .style("opacity", 0)
-            .remove();
-    
-        // Enter new ticks
-        ticks.enter().append("line")
-            .style("stroke", "black")
-            .style("stroke-width", "0.3px")
-            .style("opacity", 0) // Start hidden
-            .attr("y1", d => d._currentY1) // Start from its current or collapsed y1
-            .attr("y2", d => d._currentY2) // Start from its current or collapsed y2
-            .attr("transform", d => d._currentTransform) // Start from its current or collapsed transform
-            .merge(ticks) // Merge enter and update selections
-            .each(function(d) { d.element = this; }) // Store DOM element for next update
-            .transition(t)
-                .attr("transform", d => {
-                    const angle = (x(d.uniqueId) + x.bandwidth() / 2) * 180 / Math.PI - 90;
-                    return `rotate(${angle})`;
-                })
-                .attr("y1", outerRadius + 5)
-                .attr("y2", outerRadius + 11)
-                .style("opacity", 1);
-            */
             
         // ---- Draw the Inner Bars ----
         const barArc = d3.arc()
