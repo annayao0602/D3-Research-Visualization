@@ -5,7 +5,7 @@
 const CircosChart = function CircosChart(selector, main_data, options) {
 
     const cfg = {
-        margin: {top: 100, right: 150, bottom: 150, left: 200},
+        margin: {top: 100, right: 175, bottom: 150, left: 225},
         innerRadius: 70,
         maxValue: 0
     }
