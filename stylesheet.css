@@ -1,6 +1,6 @@
 body {
     font-family: Georgia, Times, "Times New Roman", serif;        
-    background-color: #2d2d2d;
+    background-color: #003f5c;
     margin: 0;
     padding: 0;
 }
@@ -113,4 +113,16 @@ body {
 .highlighted-stroke {
     stroke: black !important; 
     stroke-width: 0.7px !important; 
+}
+.highlight-health {
+    background-color: #517f94;
+}
+.highlight-life {
+    background-color: #9792b4;
+}
+.highlight-physical {
+    background-color: #d081b1;
+}
+.highlight-social {
+    background-color: #ffca66;
 }
