@@ -1,54 +1,18 @@
+
 body {
-    font-family: Georgia, Times, "Times New Roman", serif;        
-    background-color: #003f5c;
     margin: 0;
-    padding: 0;
-}
-.paper-layout {
-    max-width: 850px;
-    margin: 2rem auto;
-    padding: 3rem;
-    background-color: #ffffff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-#chart-title {
-    font-family: Georgia, Times, "Times New Roman", serif; 
-    font-size: 28px;
-    text-align: center;
-    font-weight: bold; 
-    color: #222;
-    border-top: 2px solid black;
-    border-bottom: 2px solid black;
-    padding: 0.5rem 0;
-    margin-bottom: 2rem; 
-}
-.abstract h2 {
-    font-family: Georgia, Times, "Times New Roman", serif; 
-    font-size: 16px;
-    text-align: center;
-    margin-top: 2rem;
-}
-.abstract p {
-    text-align: justify;
-    line-height: 1.6;
-    width: 600px;
-    font-size: 15px;
-    margin: auto;
-    color: #333;
-}
-.contributors p {
-    text-align: center;
-    line-height: 1.6;
-    font-size: 14px;
-    color: #333;
-}
-.description p {
-    text-align: center;
-    font-size: 12px;
-    color: #333;
-}
+    font-family: system-ui;
+    font-size: 1.3rem;
+    color: #ddd;
+    line-height: 1.5;
+    display: grid;
+    grid-template-columns: 
+      [full-start] minmax(1em, 1fr) 
+      [main-start] minmax(0, 40em) [main-end]
+      minmax(1em, 1fr) [full-end];
+    background: black;
+  }
 #controls {
-    position: fixed;
     top: 3rem;
     left: 0.5rem;
     z-index: 10;
@@ -115,14 +79,108 @@ body {
     stroke-width: 0.7px !important; 
 }
 .highlight-health {
-    background-color: #517f94;
+    background-color: #003f5c; 
 }
 .highlight-life {
-    background-color: #9792b4;
+    background-color: #58508d;
 }
 .highlight-physical {
-    background-color: #d081b1;
+    background-color: #bc5090;
 }
 .highlight-social {
-    background-color: #ffca66;
+    background-color: #ffa600;
+}
+
+* {
+    color-scheme: light; 
+}
+
+img {
+    max-width: 200%;
+}
+
+section {
+    grid-column: main;
+}
+
+section.fullscreen {
+    grid-column: full;
+    height: 100svh;
+    display: grid;
+    place-content: center;
+    background: linear-gradient(to bottom, #ffffff00 0%, #f0f0f0 50%, #ffffff00 100%), #f8f9fa;
+}
+
+cite {
+    display: block;
+    font-size: small;
+    margin-block: 1rem;
+    /* Slightly reduces emphasis for citations */
+    opacity: .7;
+}
+
+hr {
+    display: block;
+    margin-block: 4rem;
+    /* A soft, light gray for horizontal rules */
+    border: 1px solid #0000001a;
+    border-width: 1px 0 0;
+}
+
+.side-by-side {
+    display: grid;
+    grid-auto-flow: dense;
+    grid-template-columns: 1fr 1fr;
+    gap: 1em;
+}
+
+.side-by-side__text {
+    grid-column: 2;
+    margin-trim: block; 
+}
+
+.side-by-side__text h3 {
+    margin-top: 0;
+}
+
+h1 {
+    text-align: center;
+}
+
+/* Animations for text elements appearing on scroll */
+p, h2, h3, blockquote, hr {
+    animation: text-appear ease-in both;
+    animation-timeline: view();
+    animation-range: 0vh 70vh;
+}
+
+/* Animation for images appearing on scroll */
+img {
+    animation: image-appear ease-out both;
+    animation-timeline: view();
+    animation-range: entry 25% 60%;
+}
+
+/* Disables animations for users who prefer reduced motion */
+@prefers-reduced-motion {
+    p, h2, h3, blockquote, hr, img {
+        animation: none;
+    }
+}
+
+/* Light theme animation: Image appears from a bright, blurry state */
+@keyframes image-appear {
+    from {
+        filter: saturate(0.5) brightness(1.5) blur(4px);
+        opacity: 0;
+        scale: .98;
+    }
+}
+
+/* Text fades and slides in from below */
+@keyframes text-appear {
+    from {
+        opacity: 0;
+        translate: 0 4rem;
+    }
 }

@@ -167,6 +167,7 @@ const CircosChart = function CircosChart(selector, main_data, options) {
             })
             .style("opacity", 0) 
             .remove();
+            
 
         ideogramPaths.enter().append("path")
             .attr("fill", d => domainColor(d.values[0].Domain))
@@ -238,6 +239,98 @@ const CircosChart = function CircosChart(selector, main_data, options) {
                 .style("opacity", 1);
 
         // --- OUTER ARC LABELS ---
+        /*
+        let labelGroup = svg.select("g.label-group");
+        if (labelGroup.empty()) {
+            labelGroup = svg.append("g").attr("class", "label-group");
+        }
+
+        if (zoomDomain) {
+            drawFieldLabels(currentData); //draw field labels
+            drawGroupLabels([]); //remove group labels
+        }
+        else {
+            drawGroupLabels(groupedData);
+            drawFieldLabels([]);
+        }
+
+        function drawGroupLabels(data) {
+            const groupLabels = labelGroup.selectAll("g.group-label-container")
+                .data(data, d => d.key);
+            
+            groupLabels.exit().transition(t)
+                .style("opacity", 0)
+                .remove()
+            
+            const enteringGroupLabels = groupLabels.enter().append('g')
+                .attr("class", "group-label-container")
+                .style("opacity", 1)
+            
+            enteringGroupLabels.append("text")
+                .text(d => d.key)
+                .attr("class", "group-label");
+            
+            enteringGroupLabels.merge(groupLabels)
+                .transition(t)
+                .style("opacity", 1)
+                .attr("transform", d => {
+                    const startAngle = x(d.values[0].uniqueId);
+                    const endAngle = x(d.values[d.values.length - 1].uniqueId) + x.bandwidth();
+                    const angle = (startAngle + endAngle) / 2 * 180 / Math.PI - 90;
+                    const radius = cfg.outerRadius + 24;
+                    return `rotate(${angle}) translate(${radius}, 0)`;
+                })
+                .select("text")
+                    .attr("transform", d => {
+                        const startAngle = x(d.values[0].uniqueId);
+                        const endAngle = x(d.values[d.values.length - 1].uniqueId) + x.bandwidth();
+                        const angle = (startAngle + endAngle) / 2 * 180 / Math.PI - 90;
+                        return (angle > 90 && angle < 270) ? "rotate(180)" : "rotate(0)";
+                    })
+                    .style("text-anchor", d => {
+                        const startAngle = x(d.values[0].uniqueId);
+                        const endAngle = x(d.values[d.values.length - 1].uniqueId) + x.bandwidth();
+                        const angle = (startAngle + endAngle) / 2 * 180 / Math.PI - 90;
+                        return (angle > 90 && angle < 270) ? "end" : "start";
+                    });
+        }
+
+        function drawFieldLabels(data) {
+            const fieldLabels = labelGroup.selectAll("g.field-label-container")
+                .data(data, d => d.uniqueId); // Key by Field name
+
+            fieldLabels.exit().transition(t)
+                .style("opacity", 0)
+                .remove();
+
+            const enteringFieldLabels = fieldLabels.enter().append("g")
+                .attr("class", "field-label-container")
+                .style("opacity", 0);
+
+            enteringFieldLabels.append("text")
+                .text(d => d.uniqueId)
+                .attr("class", "field-label");
+
+            enteringFieldLabels.merge(fieldLabels)
+                .transition(t)
+                .style("opacity", 1)
+                .attr("transform", d => {
+                    const angle = (x(d.uniqueId) + x.bandwidth() / 2) * 180 / Math.PI - 90;
+                    const radius = cfg.outerRadius + 24;
+                    return `rotate(${angle}) translate(${radius}, 0)`;
+                })
+                .select("text")
+                .attr("transform", d => {
+                    const angle = (x(d.uniqueId) + x.bandwidth() / 2) * 180 / Math.PI - 90;
+                    return (angle > 90 && angle < 270) ? "rotate(180)" : "rotate(0)";
+                })
+                .style("text-anchor", d => {
+                    const angle = (x(d.uniqueId) + x.bandwidth() / 2) * 180 / Math.PI - 90;
+                    return (angle > 90 && angle < 270) ? "end" : "start";
+                });
+        } */
+
+        
         let groupLabelGroup = svg.select("g.group-label-group");
         if (groupLabelGroup.empty()) {
             groupLabelGroup = svg.append("g").attr("class", "group-label-group");
@@ -292,7 +385,7 @@ const CircosChart = function CircosChart(selector, main_data, options) {
                 
         groupLabels.merge(enteringLabels).select("text").transition(t)
             .attr("transform", d => d._targetTextTransform)
-            .style("text-anchor", d => d._targetTextAnchor);
+            .style("text-anchor", d => d._targetTextAnchor); 
 
         // --- INNER BARS ---
         const barArc = d3.arc()
@@ -367,6 +460,39 @@ const CircosChart = function CircosChart(selector, main_data, options) {
                     return function(t_val) { return barArc(i(t_val)); };
                 })
                 .attr("fill-opacity", 0.7);
+        
+        let plusGroup = svg.select("g.plus-group");
+        if(plusGroup.empty()) {
+            plusGroup = svg.append("g").attr("class", "plus-group");
+        }
+
+        const maxValueData = currentData.filter(d => +d.value > maxValue)
+
+        const plusSigns = plusGroup.selectAll("text.plus-sign")
+            .data(maxValueData, d => d.uniqueId);
+
+        plusSigns.exit().transition(t)
+            .attr("opacity",0)
+            .remove()
+        
+        plusSigns.enter().append("text")
+            .attr("class", "plus-sign")
+            .text("+")
+            .attr("text-anchor", "middle")
+            .attr("dy", ".35em") 
+            .style("font-size", "10px")
+            .style("font-weight", "bold")
+            .attr("opacity", 0)
+            .merge(plusSigns)
+            .transition(t)
+            .attr("fill", d => domainColor(d.Domain))
+            .attr("transform", d => {
+                const angle = (x(d.uniqueId) + x.bandwidth() / 2) * 180 / Math.PI - 90;
+                const radius = cfg.outerRadius + 15;
+                return `rotate(${angle}) translate(${radius}, 0)`;
+            })
+            .attr("opacity", 1);
+
             
         toggleAxesVisibility();
     }
