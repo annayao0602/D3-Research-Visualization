@@ -170,8 +170,8 @@ const CircosChart = function CircosChart(selector, main_data, options) {
 
         ideogramPaths.enter().append("path")
             .attr("fill", d => domainColor(d.values[0].Domain))
-            .style("stroke", "black")
-            .style("stroke-width", "0.3px")
+            .style("stroke", "white")
+            .style("stroke-width", "0.1px")
             .style("opacity", 0) //sliver -> complex shape
             .attr("d", d => ideogramArc({ startAngle: d.startAngle, endAngle: d.startAngle, innerRadius: ideogramArc.innerRadius()(), outerRadius: ideogramArc.outerRadius()() }))
             .attr("class", "ideogram-path") 
@@ -337,8 +337,8 @@ const CircosChart = function CircosChart(selector, main_data, options) {
 
         bars.enter().append("path")
             .attr("fill-opacity", 0) 
-            .style("stroke", "black")
-            .style("stroke-width", "0.3px")
+            .style("stroke", "white")
+            .style("stroke-width", "0.1px")
             .attr("d", d => barArc({ innerRadius: cfg.innerRadius, outerRadius: cfg.innerRadius, startAngle: x(d.uniqueId), endAngle: x(d.uniqueId) }))
             .on("mouseover", function(d) {
                 tooltip.style("opacity", 1);
