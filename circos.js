@@ -10,8 +10,8 @@ const CircosChart = function CircosChart(selector, main_data, options) {
         maxValue: 0
     }
 
-    cfg.width = 800 - cfg.margin.left - cfg.margin.right;
-    cfg.height = 700 - cfg.margin.top - cfg.margin.bottom;
+    cfg.width = 900 - cfg.margin.left - cfg.margin.right;
+    cfg.height = 800 - cfg.margin.top - cfg.margin.bottom;
     cfg.outerRadius = Math.min(cfg.width, cfg.height) / 2;
     //alter configs
     if('undefined' !== typeof options){
@@ -33,7 +33,7 @@ const CircosChart = function CircosChart(selector, main_data, options) {
 
     let currentZoomedDomain = null;
     const originalData = main_data;
-
+/*
     //background element
     const backgroundArc = d3.arc()
         .innerRadius(cfg.innerRadius)
@@ -43,6 +43,7 @@ const CircosChart = function CircosChart(selector, main_data, options) {
 
     const backgroundGroup = svg.append("g").attr("class", "background");
     backgroundGroup.append("path").attr("d", backgroundArc).attr("fill", "#f8f9fa");
+    */
 
     // --- CREATE STATIC CENTER CIRCLE ONCE ---
     const centerCircle = svg.append("circle")
@@ -192,7 +193,7 @@ const CircosChart = function CircosChart(selector, main_data, options) {
                     // Highlight ideograms of the same domain
                     ideogramGroup.selectAll("path.ideogram-path")
                         .filter(ideogramD => ideogramD.values[0].Domain === hoveredDomain)
-                        .classed("highlighted-stroke", true);
+                        .classed("highlighted-stroke", false);
     
                     // Highlight group labels of the same domain
                     groupLabelGroup.selectAll("g.group-label-container")
