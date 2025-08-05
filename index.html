@@ -5,6 +5,8 @@
 <head>
     <title>D3 Research Visualization</title>
     <link rel="stylesheet" href="stylesheet.css">
+    <link href='https://fonts.googleapis.com/css?family=Jura' rel='stylesheet'>
+
 
     <script src="https://d3js.org/d3.v4.js"></script>
     <script src="circos.js"></script>
@@ -12,34 +14,48 @@
 </head>
 
 <body>
-<section class = "title">
-  <div id= "box1">
-    <h1>What Does Research Look Like?</h1>
+<div class= "dashboard-container">
+
+  <div id= "box-header" class="card">
+    <h1>Visualizing Research at UVA</h1>
   </div>
-</section>
 
-<section class = "about">
-  <div id = "box2">
-      <p>This project focuses on visualizing research publications at R1 Institutes.</p>
+  <div id = "box-about" class="card">
+      <p>This project focuses on visualizing research at R1 Institutes like UVA and Virginia Tech by observing their number of published papers by domain. These domains are divided into four parts: <br> <br>
+
+        <span class ='highlight-social'>Social Sciences</span>, <br>
+        <span class ='highlight-health'>Health Sciences</span>, <br>
+        <span class ='highlight-life'>Life Sciences</span>, and <br>
+        <span class ='highlight-physical'>Physical Sciences</span>. </p>
   </div>
-</section>
 
-<div id = my_dataviz></div>
-<div id="controls">
-  <label for="dataset-select">Choose a university:</label>
-  <select id="dataset-select">
-      <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/numpub.csv">UVA</option>
-      <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/VTech_numpub.csv">Virginia Tech</option>
-  </select>
+  <div id = "box-helios" class="card">
+    <img src="helios.png" alt="helios picture" class="helios-img">
+  </div>
 
-  <br><br>
-  <label>
-      <input type="checkbox" id="toggle-axes" checked> Show Axes
-  </label>
+  <a href="circos_page.html" class="card-link">
+    <div id = "box-circos" class="card interactive">
+      <img src="circos.png" alt="circos picture" class="circos-img">
+
+      <div class = "card-overlay">
+        <span class="overlay-text">View Circos Visualization</span>
+      </div>
+
+    </div>
+  </a>
+
+  <div id="box-bar" class="card">
+    <h2>Top Fields For UVA <br></h2>
+    <p>
+      <br> no.1 <br>
+      no.2 <br>
+      no.3 <br>
+      no.4 <br>
+      no.5 <br> </p>
+  </div>
+  
+
 </div>
-
-<script src = "main.js"></script>
-
 
 </body>
 </html>

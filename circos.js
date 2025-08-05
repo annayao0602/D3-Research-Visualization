@@ -16,7 +16,8 @@ const CircosChart = function CircosChart(selector, main_data, options) {
     //alter configs
     if('undefined' !== typeof options){
         for(var i in options){
-          if('undefined' !== typeof options[i]){ cfg[i] = options[i]; }
+          if('undefined' !== typeof options[i]){ 
+            cfg[i] = options[i]; }
         }
       }
     const maxValue = cfg.maxValue || d3.max(main_data, d => +d.numpub);
@@ -33,17 +34,6 @@ const CircosChart = function CircosChart(selector, main_data, options) {
 
     let currentZoomedDomain = null;
     const originalData = main_data;
-/*
-    //background element
-    const backgroundArc = d3.arc()
-        .innerRadius(cfg.innerRadius)
-        .outerRadius(cfg.outerRadius)
-        .startAngle(0)
-        .endAngle(2* Math.PI);
-
-    const backgroundGroup = svg.append("g").attr("class", "background");
-    backgroundGroup.append("path").attr("d", backgroundArc).attr("fill", "#f8f9fa");
-    */
 
     // --- CREATE STATIC CENTER CIRCLE ONCE ---
     const centerCircle = svg.append("circle")
@@ -115,7 +105,7 @@ const CircosChart = function CircosChart(selector, main_data, options) {
         const allDomains = [...new Set(originalData.map(d => d.Domain))];
         const domainColor = d3.scaleOrdinal()
             .domain(allDomains)
-            .range(["#003f5c", "#58508d", "#bc5090", "#ffa600"]);
+            .range(["#003f5c", "#bc5090", "#58508d", "#ffa600"]);
         
         const groupedData = d3.nest()
             .key(d => d.Group)
