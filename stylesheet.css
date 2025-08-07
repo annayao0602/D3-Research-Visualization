@@ -21,25 +21,28 @@ html,body {
 }
 .dashboard-container {
     display: grid;
-    height: 100vh;
+    height: calc(100vh - 60px);
     padding: 20px;
     grid-template-columns: 1fr 1.75fr;
-    grid-template-rows: auto 1fr 1fr;
+    grid-template-rows: auto auto 1fr 1fr;
             
     grid-template-areas:
                 "header   chart-radial"
                 "info     chart-radial"
                 "graph    chart-bar"
-                ; 
-    gap: 20px; /* Space between all grid items */
+                "graph    chart-bar"; 
+    gap: 20px;
     max-width: 1400px; 
-    margin: 0 auto; 
+    margin: auto auto; 
 }
 
 .card.interactive{
     position: relative;
     overflow: hidden;
     cursor: pointer;
+    display: flex; 
+    align-items: center;
+    justify-content: center;
 }
 
 .card-overlay {
@@ -82,6 +85,28 @@ color: white;
 .card-link { 
     grid-area: chart-radial;
     display: flex; 
+    align-items: center;
+    justify-content: center;
+    text-decoration: none; 
+    color: inherit;
+    display: block;
+}
+.card-link2 { 
+    grid-area: graph;
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    text-decoration: none; 
+    color: inherit;
+    display: block;
+}
+.card-link3 { 
+    grid-area: info;
+    display: flex; 
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
     text-decoration: none; 
     color: inherit;
     display: block;
@@ -89,6 +114,7 @@ color: white;
 
 #box-header { 
     grid-area: header; 
+    background-color: #fff2db;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -112,13 +138,15 @@ color: white;
     align-items: center;
 }
 .helios-img {
-    width: 100%;
-    height: 100%;
+    width: 53%;
+    height: 53%;
     object-fit: contain;
 }
 .circos-img {
-    width: 100%;
-    height: 100%;
+    margin: 0;
+    padding: 0;
+    width: 50%;
+    height: 50%;
     object-fit: contain;
 }
 #box-header h1 { 
@@ -126,10 +154,15 @@ color: white;
     font-family: 'Jura';
     font-size: 30px; 
 }
-#box-about p {
+#box-about p{
     margin: 0;
     font-family: 'Jura';
-    font-size: 16px;
+    font-size: 18px;
+}
+#box-about h2{
+    margin: 0;
+    font-family: 'Jura';
+    font-size: 24px;
 }
 #box-bar h2 {
     margin: 0;
@@ -139,7 +172,7 @@ color: white;
 #box-bar p {
     margin: 5;
     font-family: 'Jura';
-    font-size: 16px;
+    font-size: 18px;
 }
 #my_dataviz {
     display: center;
