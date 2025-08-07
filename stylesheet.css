@@ -114,7 +114,6 @@ color: white;
 
 #box-header { 
     grid-area: header; 
-    background-color: #fff2db;
     display: flex;
     justify-content: center;
     align-items: center;
