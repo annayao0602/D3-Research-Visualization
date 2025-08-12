@@ -23,13 +23,13 @@ html,body {
     display: grid;
     height: calc(100vh - 60px);
     padding: 20px;
-    grid-template-columns: 1fr 1.75fr;
-    grid-template-rows: auto auto 1fr 1fr;
+    grid-template-columns: 1fr 1.4fr;
+    grid-template-rows: auto 1fr 1fr 1fr;
             
     grid-template-areas:
                 "header   chart-radial"
                 "info     chart-radial"
-                "graph    chart-bar"
+                "graph    chart-radial"
                 "graph    chart-bar"; 
     gap: 20px;
     max-width: 1400px; 
@@ -130,6 +130,12 @@ color: white;
     justify-content: center;
     align-items: center;
 }
+#box-circos {
+    grid-area: chart-radial; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 #box-bar { 
     grid-area: chart-bar; 
     display: flex;
@@ -139,13 +145,6 @@ color: white;
 .helios-img {
     width: 53%;
     height: 53%;
-    object-fit: contain;
-}
-.circos-img {
-    margin: 0;
-    padding: 0;
-    width: 50%;
-    height: 50%;
     object-fit: contain;
 }
 #box-header h1 { 
@@ -180,15 +179,9 @@ color: white;
 }
 .group-label {
     font-size: 9px;
-    font-weight: 200;
+    font-family: 'Jura';
+    font-weight: 300;
     pointer-events: none;
-}
-.field-label {
-    font-size: 9px;
-    font-weight: bold;
-    text-shadow: 1px 1px 2px #fff, -1px -1px 2px #fff, 1px -1px 2px #fff, -1px 1px 2px #fff;
-    pointer-events: none;
-    transition: opacity 0.2s ease-in-out;
 }
 .tooltip {
     position: absolute;

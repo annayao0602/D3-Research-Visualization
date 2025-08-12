@@ -7,7 +7,8 @@ const CircosChart = function CircosChart(selector, main_data, options) {
     const cfg = {
         margin: {top: 100, right: 175, bottom: 150, left: 225},
         innerRadius: 70,
-        maxValue: 0
+        maxValue: 0,
+        labels: true
     }
 
     cfg.width = 900 - cfg.margin.left - cfg.margin.right;
@@ -123,23 +124,23 @@ const CircosChart = function CircosChart(selector, main_data, options) {
                 group._current = { 
                     startAngle: oldGroup.startAngle,
                     endAngle: oldGroup.endAngle,
-                    innerRadius: cfg.outerRadius + 5,
-                    outerRadius: cfg.outerRadius + 11
+                    innerRadius: cfg.outerRadius + 11,
+                    outerRadius: cfg.outerRadius + 16
                 };
             } else {
                 group._current = {
                     startAngle: group.startAngle,
                     endAngle: group.startAngle, 
-                    innerRadius: cfg.outerRadius + 5,
-                    outerRadius: cfg.outerRadius + 11 
+                    innerRadius: cfg.outerRadius + 11,
+                    outerRadius: cfg.outerRadius + 16 
                 };
             }
         });
 
         // --- OUTER RING ---
         const ideogramArc = d3.arc()
-            .innerRadius(cfg.outerRadius + 5)
-            .outerRadius(cfg.outerRadius + 11)
+            .innerRadius(cfg.outerRadius + 11)
+            .outerRadius(cfg.outerRadius + 16)
             .padAngle(0.01);
 
         let ideogramGroup = svg.select("g.ideogram-group");
@@ -229,99 +230,7 @@ const CircosChart = function CircosChart(selector, main_data, options) {
                 })
                 .style("opacity", 1);
 
-        // --- OUTER ARC LABELS ---
-        /*
-        let labelGroup = svg.select("g.label-group");
-        if (labelGroup.empty()) {
-            labelGroup = svg.append("g").attr("class", "label-group");
-        }
-
-        if (zoomDomain) {
-            drawFieldLabels(currentData); //draw field labels
-            drawGroupLabels([]); //remove group labels
-        }
-        else {
-            drawGroupLabels(groupedData);
-            drawFieldLabels([]);
-        }
-
-        function drawGroupLabels(data) {
-            const groupLabels = labelGroup.selectAll("g.group-label-container")
-                .data(data, d => d.key);
-            
-            groupLabels.exit().transition(t)
-                .style("opacity", 0)
-                .remove()
-            
-            const enteringGroupLabels = groupLabels.enter().append('g')
-                .attr("class", "group-label-container")
-                .style("opacity", 1)
-            
-            enteringGroupLabels.append("text")
-                .text(d => d.key)
-                .attr("class", "group-label");
-            
-            enteringGroupLabels.merge(groupLabels)
-                .transition(t)
-                .style("opacity", 1)
-                .attr("transform", d => {
-                    const startAngle = x(d.values[0].uniqueId);
-                    const endAngle = x(d.values[d.values.length - 1].uniqueId) + x.bandwidth();
-                    const angle = (startAngle + endAngle) / 2 * 180 / Math.PI - 90;
-                    const radius = cfg.outerRadius + 24;
-                    return `rotate(${angle}) translate(${radius}, 0)`;
-                })
-                .select("text")
-                    .attr("transform", d => {
-                        const startAngle = x(d.values[0].uniqueId);
-                        const endAngle = x(d.values[d.values.length - 1].uniqueId) + x.bandwidth();
-                        const angle = (startAngle + endAngle) / 2 * 180 / Math.PI - 90;
-                        return (angle > 90 && angle < 270) ? "rotate(180)" : "rotate(0)";
-                    })
-                    .style("text-anchor", d => {
-                        const startAngle = x(d.values[0].uniqueId);
-                        const endAngle = x(d.values[d.values.length - 1].uniqueId) + x.bandwidth();
-                        const angle = (startAngle + endAngle) / 2 * 180 / Math.PI - 90;
-                        return (angle > 90 && angle < 270) ? "end" : "start";
-                    });
-        }
-
-        function drawFieldLabels(data) {
-            const fieldLabels = labelGroup.selectAll("g.field-label-container")
-                .data(data, d => d.uniqueId); // Key by Field name
-
-            fieldLabels.exit().transition(t)
-                .style("opacity", 0)
-                .remove();
-
-            const enteringFieldLabels = fieldLabels.enter().append("g")
-                .attr("class", "field-label-container")
-                .style("opacity", 0);
-
-            enteringFieldLabels.append("text")
-                .text(d => d.uniqueId)
-                .attr("class", "field-label");
-
-            enteringFieldLabels.merge(fieldLabels)
-                .transition(t)
-                .style("opacity", 1)
-                .attr("transform", d => {
-                    const angle = (x(d.uniqueId) + x.bandwidth() / 2) * 180 / Math.PI - 90;
-                    const radius = cfg.outerRadius + 24;
-                    return `rotate(${angle}) translate(${radius}, 0)`;
-                })
-                .select("text")
-                .attr("transform", d => {
-                    const angle = (x(d.uniqueId) + x.bandwidth() / 2) * 180 / Math.PI - 90;
-                    return (angle > 90 && angle < 270) ? "rotate(180)" : "rotate(0)";
-                })
-                .style("text-anchor", d => {
-                    const angle = (x(d.uniqueId) + x.bandwidth() / 2) * 180 / Math.PI - 90;
-                    return (angle > 90 && angle < 270) ? "end" : "start";
-                });
-        } */
-
-        
+        //----OUTER ARC LABELS-----
         let groupLabelGroup = svg.select("g.group-label-group");
         if (groupLabelGroup.empty()) {
             groupLabelGroup = svg.append("g").attr("class", "group-label-group");
@@ -329,8 +238,8 @@ const CircosChart = function CircosChart(selector, main_data, options) {
     
         const oldLabelPositionsMap = new Map(
             groupLabelGroup.selectAll("g.group-label-container")
-                           .data()
-                           .map(d => [d.key, d.element]) 
+                .data()
+                .map(d => [d.key, d.element]) 
         );
 
         groupedData.forEach(d => {
@@ -349,34 +258,38 @@ const CircosChart = function CircosChart(selector, main_data, options) {
         const groupLabels = groupLabelGroup.selectAll("g.group-label-container")
             .data(groupedData, d => d.key);
 
-        groupLabels.exit().transition(t)
-            .style("opacity", 0)
-            .attr("transform", d => { 
-                const angle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90;
-                const radius = cfg.outerRadius + 20;
-                return `rotate(${angle}) translate(${radius},0) scale(0)`; 
-            })
-            .remove();
+        if (cfg.labels == true) {
+            groupLabels.exit().transition(t)
+                .style("opacity", 0)
+                .attr("transform", d => { 
+                    const angle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90;
+                    const radius = cfg.outerRadius + 20;
+                    return `rotate(${angle}) translate(${radius},0) scale(0)`; 
+                })
+                .remove();
 
-        const enteringLabels = groupLabels.enter().append("g")
-            .attr("class", "group-label-container")
-            .style("opacity", 0) 
-            .attr("transform", d => d._currentTransform); 
+            const enteringLabels = groupLabels.enter().append("g")
+                .attr("class", "group-label-container")
+                .style("opacity", 0) 
+                .attr("transform", d => d._currentTransform); 
     
-        enteringLabels.append("text")
-            .text(d => d.key)
-            .attr("class", "group-label")
-            .style("alignment-baseline", "middle");
+            enteringLabels.append("text")
+                .text(d => d.key)
+                .attr("class", "group-label")
+                .style("alignment-baseline", "middle");
             
-        groupLabels.merge(enteringLabels)
-            .each(function(d) { d.element = this; }) 
-            .transition(t)
-                .attr("transform", d => d._targetTransform) 
-                .style("opacity", 1);
+            groupLabels.merge(enteringLabels)
+                .each(function(d) { d.element = this; }) 
+                .transition(t)
+                    .attr("transform", d => d._targetTransform) 
+                    .style("opacity", 1);
                 
-        groupLabels.merge(enteringLabels).select("text").transition(t)
-            .attr("transform", d => d._targetTextTransform)
-            .style("text-anchor", d => d._targetTextAnchor); 
+            groupLabels.merge(enteringLabels).select("text").transition(t)
+                .attr("transform", d => d._targetTextTransform)
+                .style("text-anchor", d => d._targetTextAnchor); 
+
+        }
+        
 
         // --- INNER BARS ---
         const barArc = d3.arc()
@@ -471,7 +384,7 @@ const CircosChart = function CircosChart(selector, main_data, options) {
             .text("+")
             .attr("text-anchor", "middle")
             .attr("dy", ".35em") 
-            .style("font-size", "10px")
+            .style("font-size", "12px")
             .style("font-weight", "bold")
             .attr("opacity", 0)
             .merge(plusSigns)
@@ -479,7 +392,7 @@ const CircosChart = function CircosChart(selector, main_data, options) {
             .attr("fill", d => domainColor(d.Domain))
             .attr("transform", d => {
                 const angle = (x(d.uniqueId) + x.bandwidth() / 2) * 180 / Math.PI - 90;
-                const radius = cfg.outerRadius + 15;
+                const radius = cfg.outerRadius + 5;
                 return `rotate(${angle}) translate(${radius}, 0)`;
             })
             .attr("opacity", 1);

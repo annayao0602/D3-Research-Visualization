@@ -32,6 +32,12 @@
 <script type = "module">
 
 import {Helios} from "https://cdn.skypack.dev/helios-web?min";
+import { scaleOrdinal } from "https://cdn.skypack.dev/d3-scale?min";
+import { select as d3Select } from "https://cdn.skypack.dev/d3-selection?min";
+import { schemeCategory10 } from "https://cdn.skypack.dev/d3-scale-chromatic?min";
+import { schemeTableau10 } from "https://cdn.skypack.dev/d3-scale-chromatic?min";
+
+
 
 //---HELPER METHODS---
 function GMLParse(gml) {
@@ -134,11 +140,49 @@ console.log(parsed);
 
 const helios = new Helios({
 	elementID: 'netviz', 
-	nodes: parsed.nodes, 		
+	nodes: parsed.nodes, 	
+	tracking: true,	
 	edges: parsed.edges, 
+	colorProperty: "0",
 	use2D: false, });
 
+//----ADDING NEW FEATURES----
+/*
+Features to add:
+- search bar for authors 
+- legend for research fields
+- hover effect to show label (author)
+*/
 
+helios.onNodeHoverStart((node) => {
+            if (node) {
+                // Make the node bigger on hover
+                node.size *= 1.5;
+                helios.update();
+            }
+        });
+
+        helios.onNodeHoverEnd((node) => {
+            if (node) {
+                // Return node to its original size
+                helios.nodeSize(n => n._originalSize || 1);
+                helios.update();
+            }
+        });
+
+	
+helios.backgroundColor([1.0,1.0,1.0,1.0]);
+helios.nodesGlobalSizeScale(0.5);
+helios.onNodeDoubleClick((node) => {
+		if (node) {
+			console.log(`Double Clicked: ${node.ID}`);
+			helios.centerOnNodes([node],500);
+		} else {
+			console.log(`Double clicked on background`);
+			helios.centerOnNodes([]); 
+
+		}
+	});
 </script>
 </body>
 </html>

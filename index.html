@@ -47,7 +47,12 @@
 
   <a href="circos_page.html" class="card-link">
     <div id = "box-circos" class="card interactive">
-      <img src="circos.png" alt="circos picture" class="circos-img">
+      <div id = my_dataviz></div>
+        <select id="dataset-select">
+            <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/numpub.csv"></option>
+        </select>
+
+      <script src="main_circos.js"></script>
 
       <div class = "card-overlay">
         <span class="overlay-text">View Circos Visualization</span>

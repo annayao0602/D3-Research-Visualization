@@ -4,7 +4,8 @@ let myCircosChart;
 
 var CircosOptions = {
     margin: {top: 200, right: 200, bottom: 200, left: 200},
-    maxValue: 10000
+    maxValue: 10000,
+    labels: true
 }
 
 function loadDataAndDraw() {
