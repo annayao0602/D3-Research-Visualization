@@ -178,20 +178,20 @@ const CircosChart = function CircosChart(selector, main_data, options) {
             .on("mouseover", function(d) {
                 tooltip.style("opacity", 1)
                     .html("<strong>Domain:</strong> " + d.values[0].Domain);
-                if (!currentZoomedDomain) { // Only apply hover if not already zoomed
+                if (!currentZoomedDomain) { 
                     const hoveredDomain = d.values[0].Domain;
     
                     // Highlight ideograms of the same domain
                     ideogramGroup.selectAll("path.ideogram-path")
                         .filter(ideogramD => ideogramD.values[0].Domain === hoveredDomain)
-                        .classed("highlighted-stroke", false);
+                        .classed("highlighted-stroke", true);
     
                     // Highlight group labels of the same domain
                     groupLabelGroup.selectAll("g.group-label-container")
                         .filter(labelD => labelD.values[0].Domain === hoveredDomain)
-                        .select("text") // Select the text element within the group
+                        .select("text") 
                         .style("font-weight", "bold")
-                        .style("fill", "#000"); // Darker text color
+                        .style("fill", "#000"); 
     
                     d3.select(this).style("cursor", "pointer"); // Change cursor for the hovered ideogram
                 }
