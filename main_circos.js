@@ -1,4 +1,3 @@
-//main.js: handles switching between datasets and loading the Circos SVG
 
 let myCircosChart;
 

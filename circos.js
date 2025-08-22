@@ -102,6 +102,30 @@ const CircosChart = function CircosChart(selector, main_data, options) {
             .transition(t) 
             .attr("r", d => y(d)) 
             .style("opacity", 1);
+        
+        const axisLabels = yAxisGroup.selectAll("text.axis-label")
+            .data(gridData, d => d);
+
+        axisLabels.exit().transition(t)
+            .style("opacity", 0)
+            .remove();
+
+        axisLabels.enter().append("text")
+            .attr("class", "axis-label")
+            .attr("x", 0)
+            .attr("y", 0)
+            .style("opacity", 0)
+            .merge(axisLabels)
+            .transition(t)
+            .attr("y", d => -y(d))
+            .attr("dy", "0.35em")
+            .text((d, i) => {
+                if ((i + 1) % 2 === 0) {
+                    return d3.format(".1s")(d);
+                }
+                return "";
+            })
+            .style("opacity", 0.5);
 
         const allDomains = [...new Set(originalData.map(d => d.Domain))];
         const domainColor = d3.scaleOrdinal()

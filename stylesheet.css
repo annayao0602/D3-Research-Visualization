@@ -183,6 +183,11 @@ color: white;
     font-weight: 300;
     pointer-events: none;
 }
+.axis-label {
+    font-size: 9px;
+    font-family: 'Jura';
+    font-weight: 300;
+}
 .tooltip {
     position: absolute;
     background-color: #fff;
