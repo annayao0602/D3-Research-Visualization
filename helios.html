@@ -6,6 +6,7 @@
 <html>
 
 <head>
+	<script src="https://d3js.org/d3.v7.min.js"></script>
     <title>Helios-web</title>
 </head>
 
@@ -27,9 +28,9 @@
 
 <body>
     <div id="netviz"></div>
-    <script src="uva_data.js"></script>
 
-<script type = "module">
+    <script type = "module" src="uva_data.js"></script>
+<script>
 
 import {Helios} from "https://cdn.skypack.dev/helios-web?min";
 import { scaleOrdinal } from "https://cdn.skypack.dev/d3-scale?min";
@@ -136,15 +137,14 @@ async function loadGMLFile(networkFile) {
 
 
 const parsed = GMLParse(gmlData);
-console.log(parsed);
 
 const helios = new Helios({
 	elementID: 'netviz', 
 	nodes: parsed.nodes, 	
 	tracking: true,	
 	edges: parsed.edges, 
-	colorProperty: "0",
-	use2D: false, });
+	colorProperty: "Label",
+	use2D: false });
 
 //----ADDING NEW FEATURES----
 /*
@@ -153,6 +153,12 @@ Features to add:
 - legend for research fields
 - hover effect to show label (author)
 */
+
+const colorDomains = [...new Set(Object.values(parsed.nodes).map(node => node.Label))];
+console.log(colorDomains)
+const colorScale = scaleOrdinal(schemeTableau10).domain(colorDomains);
+helios.nodeColor(node => colorScale(node.Label));
+console.log(nodeColor)
 
 helios.onNodeHoverStart((node) => {
             if (node) {
@@ -182,7 +188,7 @@ helios.onNodeDoubleClick((node) => {
 			helios.centerOnNodes([]); 
 
 		}
-	});
+	}); 
 </script>
 </body>
 </html>
