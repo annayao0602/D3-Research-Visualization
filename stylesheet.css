@@ -10,12 +10,10 @@ html,body {
     height: 100%;
   }
 #controls {
-    top: 3rem;
     font-family: 'Jura';
-    left: 0.5rem;
     z-index: 10;
     font-size: 14px;
-    border: 1px solid #e0e0e0;
+    border: 0.5px solid #e0e0e0;
     padding: 0.5rem;
     border-radius: 1px;
     background-color: #fafafa;
@@ -29,11 +27,27 @@ html,body {
     font-family: 'Jura';
     font-size: 18px;
     display: flex;
+    flex-direction: row;
     justify-content: space-between; 
-    align-items: flex-start;
+    align-items: center;
 }
+.header-title {
+    font-family: 'Jura';
+    font-size: 18px;
+    display: flex;
+    flex-direction: row;
+    align-items: center; 
+    gap: 15px; 
+}
+.about {
+    font-family: 'Jura';
+    font-size: 18px;
+    gap: 15px; 
+}
+/*---MAIN GRIDBOX---*/
 .dashboard-container {
     display: grid;
+    height: 80vh;
     grid-template-columns: 1fr 1.5fr;
     grid-template-areas:
                 "chart-bar chart-radial"
@@ -41,58 +55,25 @@ html,body {
                 "graph     chart-radial"; 
     grid-template-rows: auto auto;
     gap: 20px;
-    max-width: 1400px; 
+    max-width: 1500px; 
     margin: auto auto; 
-}
-  
+} 
 .card {
-    border: 0.5px solid rgb(136, 136, 136);
     background-color: #FFFFFF;
-    box-shadow: 4px 4px 2px rgb(164, 164, 164);
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 4px 10px 0 rgba(0, 0, 0, 0.19);
     padding: 10px;
-    display: flex;
-    flex-direction: column;
     min-height:0;
+    border-radius: 15px;
 }
-.card-link { 
-    grid-area: chart-radial;
-    display: flex; 
-    align-items: center;
-    justify-content: center;
-    text-decoration: none; 
-    color: inherit;
-}
-.card-link2 { 
-    grid-area: graph;
-    display: flex; 
-    align-items: center;
-    justify-content: center;
-    text-decoration: none; 
-    color: inherit;
-    display: block;
-}
-/*
 #box-helios { 
     grid-area: graph; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 #box-circos {
     grid-area: chart-radial; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 #box-bar { 
     grid-area: chart-bar; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
-    
-    */
-
 #box-bar h2 {
     margin: 0;
     font-family: 'Jura';
@@ -104,8 +85,14 @@ html,body {
     font-size: 18px;
 }
 #my_dataviz {
-    justify-content: center;
+    display: flex;
+    justify-content: center; 
+    align-items: center;    
+    height: 100%; 
+
 }
+
+/* ---- CIRCOS CSS ----*/
 .group-label {
     font-size: 9px;
     font-family: 'Jura';
@@ -154,6 +141,8 @@ html,body {
     stroke: black !important; 
     stroke-width: 0.7px !important; 
 }
+
+/*----HIGHLIGHTS----*/
 .highlight-health {
     text-decoration: underline;
     text-decoration-color: #003f5c; 

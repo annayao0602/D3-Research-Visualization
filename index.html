@@ -16,39 +16,42 @@
 <body>
   <header class="page-header">
     <div class ="header-title">
-      <h1>A Closer Look At Research</h1>
-      <p>This project aims to visualize research at R1 institutes such as UVA in a creative manner. Click “Expand” on any of the visualizations to learn more.</p>
+      <div class = "icon">
+        <img src = "dropdown_icon.png" alt = "blue icon" width = 40 height = 40>
+      </div>
+      <div class = "title">
+        <h1>A Closer Look At Research</h1>
+      </div>
     </div>
-
-    <div class = controls>
-      <label for="dataset-select">Choose a university:</label>
-      <select id="dataset-select">
-        <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/numpub.csv">UVA</option>
-    </select>
-    </div>
+      <div class = controls>
+        <label for="dataset-select">Choose a university:</label>
+        <select id="dataset-select">
+          <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/numpub.csv">UVA</option>
+      </select>
+      </div>
   </header>
+  <div class = "about">
+    <p>This project aims to visualize research at R1 institutes such as UVA in a creative manner. Click “Expand” on any of the visualizations to learn more.</p>
+  </div>
 
 <main class= "dashboard-container">
 
-  <a href="helios.html" class="card-link2">
     <div id = "box-helios" class="card">
-      <div id = #netviz></div>
-      
-      <script src="helios.html"></script>
+      <div id = "netviz">
+        <script src= "helios.html"></script>
+      </div>
     </div>
 
-  <a href="circos_page.html" class="card-link">
     <div id = "box-circos" class="card">
-      <div id = my_dataviz></div>
-        
-      <script src="main_circos.js"></script>
+      <div id = "my_dataviz">
+        <script src="main_circos.js"></script>
+      </div>
     </div>
-  </a>
 
   <div id="box-bar" class="card">
     <h2>Top Fields For UVA <br></h2>
     <p>
-      <br> no.1 <br>
+      no.1 <br>
       no.2 <br>
       no.3 <br>
       no.4 <br>
