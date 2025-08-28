@@ -6,11 +6,12 @@
 html,body {
     color: #525252;
     line-height: 1.5;
-    background: rgb(241, 241, 241);
+    background: rgb(255, 255, 255);
     height: 100%;
   }
 #controls {
     top: 3rem;
+    font-family: 'Jura';
     left: 0.5rem;
     z-index: 10;
     font-size: 14px;
@@ -19,59 +20,30 @@ html,body {
     border-radius: 1px;
     background-color: #fafafa;
 }
+.page-header h1 {
+    margin: 0;
+    font-family: 'Jura';
+    font-size: 24px;
+}
+.page-header {
+    font-family: 'Jura';
+    font-size: 18px;
+    display: flex;
+    justify-content: space-between; 
+    align-items: flex-start;
+}
 .dashboard-container {
     display: grid;
-    height: calc(100vh - 60px);
-    padding: 20px;
-    grid-template-columns: 1fr 1.4fr;
-    grid-template-rows: auto 1fr 1fr 1fr;
-            
+    grid-template-columns: 1fr 1.5fr;
     grid-template-areas:
-                "header   chart-radial"
-                "info     chart-radial"
-                "graph    chart-radial"
-                "graph    chart-bar"; 
+                "chart-bar chart-radial"
+                "graph     chart-radial"
+                "graph     chart-radial"; 
+    grid-template-rows: auto auto;
     gap: 20px;
     max-width: 1400px; 
     margin: auto auto; 
 }
-
-.card.interactive{
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    display: flex; 
-    align-items: center;
-    justify-content: center;
-}
-
-.card-overlay {
-    position: absolute;
-    width: 100%;
-    top: 0;
-    left: 0;
-    height: 100%;
-
-    background-color: rgba(40, 40, 40, 0.7); 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    opacity:0;
-
-    transition: opacity 0.3s ease-in-out;
-}
-
-.overlay-text {
-color: white;
-  font-family: 'Jura', sans-serif;
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.card.interactive:hover .card-overlay {
-    opacity: 1;
-  }
   
 .card {
     border: 0.5px solid rgb(136, 136, 136);
@@ -89,7 +61,6 @@ color: white;
     justify-content: center;
     text-decoration: none; 
     color: inherit;
-    display: block;
 }
 .card-link2 { 
     grid-area: graph;
@@ -100,30 +71,7 @@ color: white;
     color: inherit;
     display: block;
 }
-.card-link3 { 
-    grid-area: info;
-    display: flex; 
-    margin: 0;
-    padding: 0;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none; 
-    color: inherit;
-    display: block;
-}
-
-#box-header { 
-    grid-area: header; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-#box-about { 
-    grid-area: info; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+/*
 #box-helios { 
     grid-area: graph; 
     display: flex;
@@ -142,26 +90,9 @@ color: white;
     justify-content: center;
     align-items: center;
 }
-.helios-img {
-    width: 53%;
-    height: 53%;
-    object-fit: contain;
-}
-#box-header h1 { 
-    margin: 0;
-    font-family: 'Jura';
-    font-size: 30px; 
-}
-#box-about p{
-    margin: 0;
-    font-family: 'Jura';
-    font-size: 18px;
-}
-#box-about h2{
-    margin: 0;
-    font-family: 'Jura';
-    font-size: 24px;
-}
+    
+    */
+
 #box-bar h2 {
     margin: 0;
     font-family: 'Jura';
@@ -173,8 +104,6 @@ color: white;
     font-size: 18px;
 }
 #my_dataviz {
-    display: center;
-    position: absolute;
     justify-content: center;
 }
 .group-label {

@@ -8,6 +8,7 @@
 <head>
 	<script src="https://d3js.org/d3.v7.min.js"></script>
     <title>Helios-web</title>
+	<script src="uva_data.js"></script>
 </head>
 
 <style>
@@ -29,8 +30,7 @@
 <body>
     <div id="netviz"></div>
 
-    <script type = "module" src="uva_data.js"></script>
-<script>
+<script type = "module">
 
 import {Helios} from "https://cdn.skypack.dev/helios-web?min";
 import { scaleOrdinal } from "https://cdn.skypack.dev/d3-scale?min";
@@ -95,6 +95,7 @@ function GMLParse(gml) {
 			graph[key] = value;
 		}
 	});
+	
 	let nodesDictionary = {};
 	nodes.forEach(function (node) {
 		nodesDictionary[node.id] = node;
@@ -143,7 +144,7 @@ const helios = new Helios({
 	nodes: parsed.nodes, 	
 	tracking: true,	
 	edges: parsed.edges, 
-	colorProperty: "Label",
+	colorProperty: "0",
 	use2D: false });
 
 //----ADDING NEW FEATURES----
@@ -154,12 +155,13 @@ Features to add:
 - hover effect to show label (author)
 - ego network (search person, see who they are connected to)
 */
-
+/*
 const colorDomains = [...new Set(Object.values(parsed.nodes).map(node => node.Label))];
 console.log(colorDomains)
 const colorScale = scaleOrdinal(schemeTableau10).domain(colorDomains);
 helios.nodeColor(node => colorScale(node.Label));
 console.log(nodeColor)
+*/
 
 helios.onNodeHoverStart((node) => {
             if (node) {

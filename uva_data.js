@@ -1,4 +1,4 @@
-export const gmlData = `
+const gmlData = `
 graph [
   node [
     0 "Biology"
