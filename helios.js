@@ -1,4 +1,5 @@
 
+import { gmlData } from "./uva_data.js";
 import {Helios} from "https://cdn.skypack.dev/helios-web?min";
 import { scaleOrdinal } from "https://cdn.skypack.dev/d3-scale?min";
 import { select as d3Select } from "https://cdn.skypack.dev/d3-selection?min";

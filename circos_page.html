@@ -12,12 +12,35 @@
     <script src="circos.js"></script>
 
 </head>
+<style>
+    .controls_1 {
+        font-family: 'Jura';
+        display: flex;
+        flex-direction: column;
+    }
+
+</style>
 
 <body>
 
 <div id = my_dataviz></div>
+<div class = controls_1>
+    <div class = "dropdown">
+        <label for="dataset-select" style = 'font-family: Jura;'>Choose a university:</label>
+        <select id="dataset-select">
+          <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/numpub.csv">UVA</option>
+          <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/VTech_numpub.csv">Virginia Tech</option>
+        </select>
+    </div>
+    <div class = "checkbox">
+        <label for = "toggle-axes" style = 'font-family: Jura;'>Axes lines</label>
+        <input type="checkbox" 
+                       name="check" 
+                       id="toggle-axes" checked>
+    </div>
+  </div>
 
-<script src = "main_circos.js"></script>
+<script src = "main_circos2.js"></script>
 
 
 </body>

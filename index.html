@@ -16,8 +16,11 @@
 <body>
   <header class="page-header">
     <div class ="header-title">
-      <div class = "icon">
+      <div class = "dropdown">
         <img src = "dropdown_icon.png" alt = "blue icon" width = 40 height = 40>
+        <div class = "dropdown-content">
+          <a href = "about.html"> About</a>
+        </div>
       </div>
       <div class = "title">
         <h1>A Closer Look At Research</h1>
@@ -37,15 +40,20 @@
 <main class= "dashboard-container">
 
     <div id = "box-helios" class="card">
-      <div id = "netviz">
-        <script src= "helios.html"></script>
-      </div>
+      <a href="helios.html">
+        <div id = "button">
+          <img src = "button1.png" width = 65 height = 35>
+        </div>
+      </a>
+      <img src = "helios.png" width = 350 height = 350>
     </div>
 
     <div id = "box-circos" class="card">
-      <div id = "button">
-        <img src = "button.png" width = 65 height = 40>
-      </div>
+      <a href="circos_page.html">
+        <div id = "button">
+          <img src = "button1.png" width = 65 height = 35>
+        </div>
+      </a>
       <div id = "my_dataviz">
         <script src="main_circos.js"></script>
       </div>
