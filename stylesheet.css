@@ -70,6 +70,12 @@ html,body {
 }
 #box-circos {
     grid-area: chart-radial; 
+    position: relative;
+}
+#button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
 }
 #box-bar { 
     grid-area: chart-bar; 
