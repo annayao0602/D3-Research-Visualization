@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<meta charset="utf-8">
+<head>
+    <title>D3 Bar Chart</title>
+    <link href='https://fonts.googleapis.com/css?family=Jura' rel='stylesheet'>
+
+    <script src="https://d3js.org/d3.v4.js"></script>
+</head>
+<style>
+    .tooltip {
+        position: absolute;
+        font-family: 'Jura';
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 14px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease-out;
+}
+</style>
+<body>
+    <div id="barchart"></div>
+    <script src = "bar.js"></script>
+</body>
+</html>
