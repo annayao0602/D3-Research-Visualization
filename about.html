@@ -34,11 +34,23 @@
         text-decoration: underline;
         text-decoration-color: #ffa600;
     }
+    .home_button {
+        position: absolute;
+        top: 20;
+        left: 20;
+    }
+    .home_button:hover {
+        scale: 1.1;
+    }
 </style>
 
 <body>
-
-<h1><b>About</b></h1>
+<div class = "home_button">
+    <a href="index.html">
+        <img src = "images/home.png" width = 50 height = 50>
+    </a>
+</div>
+<img src = "images/about.png" width = 200 height = 100>
 <p> This project focuses on visualizing research at R1 Institutes like UVA and Virginia Tech by observing their number of published papers by domain. These domains are divided into four parts: <br> <br>
 
     <span class ='highlight-social'>Social Sciences</span>, <br>
@@ -51,8 +63,8 @@
     <br>    
 </p>
 <h2><b>How it Began</b></h2>
-<img src = "og_circos.png" width = 700 height = 700>
-<img src = "og_circos2.png" width = 700 height = 700>
+<img src = "images/og_circos.png" width = 700 height = 700>
+<img src = "images/og_circos2.png" width = 700 height = 700>
 <p>
     These initial drafts were created on Circos, a software package known for visualizing genomic data (<a href="https://github.com/annayao0602/Circos-Research-Visualizations">code</a>). As interactivity became a necessary feature, these visualizations were redesigned from scratch using d3.js. Since then, many elements and features have been added on to create a data dashboard.
     <br>

@@ -185,7 +185,7 @@ html,body {
 }
 .highlighted-stroke {
     stroke: black !important; 
-    stroke-width: 0.7px !important; 
+    stroke-width: 0.5px !important; 
 }
 
 /*----HIGHLIGHTS----*/

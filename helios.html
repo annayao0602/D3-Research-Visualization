@@ -24,10 +24,25 @@
             height: 100%;
 			background: #f0f0f0;
         }
+    .home_button {
+        position: absolute;
+        top: 20;
+        left: 20;
+    }
+    .home_button:hover {
+        scale: 1.1;
+    }
 </style>
 
 <body>
-    <div id="netviz"></div>
+    
+<div id="netviz"></div>
+
+<div class = "home_button">
+    <a href="index.html">
+        <img src = "images/Home.png" width = 50 height = 50>
+    </a>
+</div>
 
 <script type = "module" src = "helios.js"></script>
 </body>
