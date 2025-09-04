@@ -68,7 +68,7 @@ function GMLParse(gml) {
 	nodes.forEach(function (node) {
 		nodesDictionary[node.id] = node;
 	});
-	graph.nodes = nodesDictionary;
+	graph.nodes = nodes;
 	graph.edges = edges;
 	return graph;
 };
@@ -123,13 +123,14 @@ Features to add:
 - hover effect to show label (author)
 - ego network (search person, see who they are connected to)
 */
-/*
-const colorDomains = [...new Set(Object.values(parsed.nodes).map(node => node.Label))];
-console.log(colorDomains)
+
+const colorDomains = [...new Set(Object.values(parsed.nodes).map(node => node[0]))];
+console.log(colorDomains);
 const colorScale = scaleOrdinal(schemeTableau10).domain(colorDomains);
-helios.nodeColor(node => colorScale(node.Label));
-console.log(nodeColor)
-*/
+console.log(colorScale);
+
+//(node => colorScale(node[0]));
+
 
 helios.onNodeHoverStart((node) => {
             if (node) {
