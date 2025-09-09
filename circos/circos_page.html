@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<meta charset="utf-8">
+<head>
+    <title>D3 Research Visualization</title>
+    <link href='https://fonts.googleapis.com/css?family=Jura' rel='stylesheet'>
+
+
+    <script src="https://d3js.org/d3.v4.js"></script>
+
+</head>
+<style>
+    body {
+        font-family: 'Jura';
+    }
+    .highlight-health {
+        text-decoration: underline;
+        text-decoration-color: #003f5c; 
+    }
+    .highlight-life {
+        text-decoration: underline;
+        text-decoration-color: #bc5090;
+    }
+    .highlight-physical {
+        text-decoration: underline;
+        text-decoration-color: #58508d;
+    }
+    .highlight-social {
+        text-decoration: underline;
+        text-decoration-color: #ffa600;
+    }
+    .home_button_c:hover {
+        scale: 1.1;
+    }
+    .container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-left: 15px;
+    }
+    #header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 15px;
+        margin-left: 15px;
+    }
+    .intro {
+        font-size: 20px;
+    }
+</style>
+
+<body>
+<div id = "header">
+    <div class = "home_button_c">
+        <a href="../index.html">
+            <img src = "../images/home.png" width = 50 height = 50>
+        </a>
+    </div>
+    <div class = "head">
+        <h1>Visualizing Publications</h1>
+    </div>
+</div>
+
+<div class = "container">
+    <div class = "words">
+        <div class = "intro">
+            <p>This project focuses on visualizing research at R1 Institutes like UVA and Virginia Tech by observing their number of published papers by domain. These domains are divided into four parts: <br> <br>
+
+                <span class ='highlight-social'>Social Sciences</span>, <br>
+                <span class ='highlight-health'>Health Sciences</span>, <br>
+                <span class ='highlight-life'>Life Sciences</span>, and <br>
+                <span class ='highlight-physical'>Physical Sciences</span>.</p>
+        </div>
+        <div class = "buttons">
+            <img src = "../images/tutorial.png" width = 100>
+        </div>
+    </div>
+    <div class = "image">
+        <img src= "../images/unlabeledcircos.jpg" width = 650>
+    </div>
+</div>
+
+
+<script src = "main_circos2.js"></script>
+
+
+</body>
+</html>
+
+
+
+  
+  

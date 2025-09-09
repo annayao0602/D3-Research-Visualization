@@ -188,22 +188,5 @@ html,body {
     stroke-width: 0.5px !important; 
 }
 
-/*----HIGHLIGHTS----*/
-.highlight-health {
-    text-decoration: underline;
-    text-decoration-color: #003f5c; 
-}
-.highlight-life {
-    text-decoration: underline;
-    text-decoration-color: #bc5090;
-}
-.highlight-physical {
-    text-decoration: underline;
-    text-decoration-color: #58508d;
-}
-.highlight-social {
-    text-decoration: underline;
-    text-decoration-color: #ffa600;
-}
 
   
