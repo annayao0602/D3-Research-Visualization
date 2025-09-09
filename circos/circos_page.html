@@ -33,11 +33,14 @@
     .home_button_c:hover {
         scale: 1.1;
     }
+    .buttons:hover {
+        scale: 1.1;
+    }
     .container {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 15px;
-        margin-left: 15px;
+        margin-left: 80px;
     }
     #header {
         display: flex;
@@ -48,6 +51,17 @@
     }
     .intro {
         font-size: 20px;
+    }
+    .buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-top: 150px;
+        gap: 20px;
+    }
+    .image {
+        margin-right: 50px;
     }
 </style>
 
@@ -66,15 +80,22 @@
 <div class = "container">
     <div class = "words">
         <div class = "intro">
-            <p>This project focuses on visualizing research at R1 Institutes like UVA and Virginia Tech by observing their number of published papers by domain. These domains are divided into four parts: <br> <br>
+            <p>This visualization focuses on research at R1 Institutes like UVA and Virginia Tech by observing their number of published papers by domain. These domains are divided into four parts: <br> <br>
 
                 <span class ='highlight-social'>Social Sciences</span>, <br>
                 <span class ='highlight-health'>Health Sciences</span>, <br>
                 <span class ='highlight-life'>Life Sciences</span>, and <br>
                 <span class ='highlight-physical'>Physical Sciences</span>.</p>
+
+                <br>
+                <br>
+
+                Click on the tutorial button to proceed to visualization.
         </div>
         <div class = "buttons">
-            <img src = "../images/tutorial.png" width = 100>
+            <a href = "circos_main.html">
+                <img src = "../images/tutorial.png" width = 150>
+            </a>
         </div>
     </div>
     <div class = "image">
