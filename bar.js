@@ -21,7 +21,7 @@ d3.csv("https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/
     const allDomains = [...new Set(data.map(d => d.Domain))];
     const domainColor = d3.scaleOrdinal()
         .domain(allDomains)
-        .range(["#003f5c", "#bc5090", "#ffa600", "#58508d"]);
+        .range([ "#bc5090", "#003f5c", "#ffa600", "#58508d"]);
             
     const tooltip = d3.select("body").append("div").attr("class", "tooltip");
 

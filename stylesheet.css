@@ -110,32 +110,33 @@ html,body {
 }
 #button {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 10px;
+    right: 10px;
 }
 #button:hover {
     scale: 1.1; 
 }
 #box-bar { 
     grid-area: chart-bar; 
+    position: relative;
 }
-#box-bar h2 {
+#box-bar h3 {
     margin: 0;
     font-family: 'Jura';
-    font-size: 18px;
-}
-#box-bar p {
-    margin: 5;
-    font-family: 'Jura';
-    font-size: 18px;
 }
 #my_dataviz {
     display: flex;
     justify-content: center; 
     align-items: center;    
     height: 100%; 
-
 }
+.viz_header{
+    position: absolute;
+    top: 0px;
+    left: 20px;
+    font-family: 'Jura';
+}
+
 
 /* ---- CIRCOS CSS ----*/
 .group-label {

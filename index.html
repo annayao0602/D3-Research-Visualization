@@ -41,15 +41,21 @@
 <main class= "dashboard-container">
 
     <div id = "box-helios" class="card">
+      <div class = "viz_header">
+        <h3>Coauthorship Network</h3>
+      </div>
       <a href="helios.html">
         <div id = "button">
           <img src = "images/button1.png" width = 65 height = 35>
         </div>
       </a>
-      <img src = "images/helios.png" width = 350 height = 350>
+      <iframe src="helios.html" style="border:none;" height="400" width="500" title="Iframe Example"></iframe>
     </div>
 
     <div id = "box-circos" class="card">
+      <div class = "viz_header">
+        <h3>Number of Publications</h3>
+      </div>
       <a href="circos/circos_page.html">
         <div id = "button">
           <img src = "images/button1.png" width = 65 height = 35>
@@ -61,10 +67,15 @@
     </div>
 
   <div id="box-bar" class="card">
-    <h2>Top Fields For UVA <br></h2>
+    <h3>Top Fields For UVA</h3>
     <div id = "barchart">
       <script src = "bar.js"></script>
     </div>
+    <a href="circos/circos_page.html">
+      <div id = "button">
+        <img src = "images/button1.png" width = 65 height = 35>
+      </div>
+    </a>
   </div>
   
 
