@@ -13,15 +13,17 @@
     }
     .home_button_c:hover {
         scale: 1.1;
-    }
+    } 
     .buttons:hover {
         scale: 1.1;
     }
-    .container {
+    #tutorial-container {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 15px;
         margin-left: 80px;
+        opacity: 1;
+        transition: opacity 0.4s ease-in-out; 
     }
     #header {
         display: flex;
@@ -32,17 +34,33 @@
     }
     .intro {
         font-size: 20px;
+        margin-top: 150px;
     }
-    .buttons {
+    #next-btn {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin-top: 150px;
+        margin-top: 100px;
         gap: 20px;
+        transition: opacity 0.5s ease-in-out;
+    }
+    .hidden {
+        opacity: 0;
+        pointer-events: none; 
+}
+    #next-btn:hover {
+        scale: 1.1;
     }
     .image {
         margin-right: 50px;
+    }
+
+    #tutorial-container.fade-out {
+        opacity: 0;
+    }
+    .intro p {
+        white-space: pre-line;
     }
 </style>
 
@@ -58,14 +76,14 @@
     </div>
 </div>
 
-<div class = "container">
+<div id = "tutorial-container">
     <div class = "words">
         <div class = "intro">
-            <p>This circle makes up the entirety of research publications at UVA as of May 2025.
+            <p id = "tutorial-text"> </p>
         </div>
-        <div class = "buttons">
+        <div id = "next-btn" class = "hidden">
             <a href = "#">
-                <img src = "../images/next.png" width = 150>
+                <img src = "../images/next.png" width = 100>
             </a>
         </div>
     </div>
@@ -77,15 +95,20 @@
 
 <script>
     const tutorialSteps = [
-    "This guide will walk you through the key features. Click 'Next' to begin.",
-    "First, notice the main dashboard, which shows an overview of all your data points.",
-    "Next, use the dropdown menus at the top to filter the data by category or date range.",
-    "You're all set! Click 'Finish' to start exploring the live data."
+    "This guide will walk you through the key features of this visualization. Click 'Next' to begin.",
+    "On your right, this circle showcases every research paper published at UVA as of May 2025.",
+    `These publications are grouped into 4 domains:\n \n Life Sciences, \nSocial Sciences, \nHealth Sciences, \nand Physical Sciences`,
+    "Each domain contains groups which are divided on the outer arc. \n \n There are 26 groups altogether",
+    "Each group contains fields which are shown in the inner bars. \n \n There are 251 fields altogether",
+    "Hover over fields to view the number of publications in that given field and its name. \n \n Fields with more than 10,000 publications are marked with a “+” sign",
+    "Click on any domain on the outer ring to zoom into that domain",
+    "Once zoomed in, click on the center circle to return to the main circle",
+    "You're all set! Click 'Go to viz' to explore the visualization on your own."
     ];
         
     const textElement = document.getElementById('tutorial-text');
-    const nextButton = document.getElementById('next-btn'); // This now correctly selects the <a> tag
-    const nextButtonImage = document.querySelector('#next-btn img'); // <-- NEW: Select the image inside the link
+    const nextButton = document.getElementById('next-btn'); 
+    const nextButtonImage = document.querySelector('#next-btn img'); 
     const tutorialContainer = document.getElementById('tutorial-container');
 
     let currentStep = 0;
@@ -94,13 +117,16 @@
         textElement.textContent = tutorialSteps[stepIndex];
 
         if (stepIndex === tutorialSteps.length - 1) {
-            nextButtonImage.src = "../images/next.png"; //make finish button
+            nextButtonImage.src = "../images/gotoviz.png"; 
+            nextButtonImage.width = 150;
         } else {
             nextButtonImage.src = "../images/next.png"; 
         }
     }
 
     nextButton.addEventListener('click', (event) => { 
+        nextButton.classList.add('hidden');
+
         event.preventDefault();
         tutorialContainer.classList.add('fade-out');
 
@@ -111,13 +137,22 @@
                 showStep(currentStep);
                 tutorialContainer.classList.remove('fade-out');
             } else {
-                window.location.href = "your-visualization-page.html";
+                window.location.href = "circos_main.html";
             }
-        }, 400); 
-    });
+        }, 400);
+        setTimeout(() => {
+            nextButton.classList.remove('hidden');
+        }, 1000);
+        
+
+    }
+);
 
     showStep(currentStep);
 
+    setTimeout(() => {
+        nextButton.classList.remove('hidden');
+    }, 1000);
 
 
 </script>
