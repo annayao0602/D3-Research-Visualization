@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<meta charset="utf-8">
+<head>
+    <title>D3 Research Visualization</title>
+    <link href='https://fonts.googleapis.com/css?family=Jura' rel='stylesheet'>
+
+</head>
+<style>
+    body {
+        font-family: 'Jura';
+    }
+    .home_button_c:hover {
+        scale: 1.1;
+    }
+    .buttons:hover {
+        scale: 1.1;
+    }
+    .container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-left: 80px;
+    }
+    #header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 15px;
+        margin-left: 15px;
+    }
+    .intro {
+        font-size: 20px;
+    }
+    .buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-top: 150px;
+        gap: 20px;
+    }
+    .image {
+        margin-right: 50px;
+    }
+</style>
+
+<body>
+<div id = "header">
+    <div class = "home_button_c">
+        <a href="../index.html">
+            <img src = "../images/home.png" width = 50 height = 50>
+        </a>
+    </div>
+    <div class = "head">
+        <h1>Tutorial</h1>
+    </div>
+</div>
+
+<div class = "container">
+    <div class = "words">
+        <div class = "intro">
+            <p>This circle makes up the entirety of research publications at UVA as of May 2025.
+        </div>
+        <div class = "buttons">
+            <a href = "#">
+                <img src = "../images/next.png" width = 150>
+            </a>
+        </div>
+    </div>
+    <div class = "image">
+        <img src= "../images/unlabeledcircos.jpg" width = 650>
+    </div>
+</div>
+</body>
+
+<script>
+    const tutorialSteps = [
+    "This guide will walk you through the key features. Click 'Next' to begin.",
+    "First, notice the main dashboard, which shows an overview of all your data points.",
+    "Next, use the dropdown menus at the top to filter the data by category or date range.",
+    "You're all set! Click 'Finish' to start exploring the live data."
+    ];
+        
+    const textElement = document.getElementById('tutorial-text');
+    const nextButton = document.getElementById('next-btn'); // This now correctly selects the <a> tag
+    const nextButtonImage = document.querySelector('#next-btn img'); // <-- NEW: Select the image inside the link
+    const tutorialContainer = document.getElementById('tutorial-container');
+
+    let currentStep = 0;
+
+    function showStep(stepIndex) {
+        textElement.textContent = tutorialSteps[stepIndex];
+
+        if (stepIndex === tutorialSteps.length - 1) {
+            nextButtonImage.src = "../images/next.png"; //make finish button
+        } else {
+            nextButtonImage.src = "../images/next.png"; 
+        }
+    }
+
+    nextButton.addEventListener('click', (event) => { 
+        event.preventDefault();
+        tutorialContainer.classList.add('fade-out');
+
+        setTimeout(() => {
+            currentStep++;
+
+            if (currentStep < tutorialSteps.length) {
+                showStep(currentStep);
+                tutorialContainer.classList.remove('fade-out');
+            } else {
+                window.location.href = "your-visualization-page.html";
+            }
+        }, 400); 
+    });
+
+    showStep(currentStep);
+
+
+
+</script>
+</html>
+
+
+
+  
+  

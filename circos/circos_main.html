@@ -29,6 +29,25 @@
         position: sticky;
         top: 0;
     }
+    .viz_container {
+        display: flex;
+        flex-direction: row;
+        height: 80vh;
+    }
+    .buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-top: 150px;
+        gap: 20px;
+    }
+    .buttons:hover {
+        scale: 1.1;
+    }
+    .home_button:hover {
+        scale: 1.1;
+    }
 </style>
 
 <body>
@@ -55,7 +74,23 @@
             </div>
         </div>
     </div>
-    <div id = my_dataviz></div>
+    <div class = "viz_container">
+        <div id = "viz_text">
+            <h1>Visualizing Publications</h1>
+            <p> Toggle axes lines and change universities from the controls in the top right corner. To go back to the tutorial, click the tutorial button again.
+            </p>
+            <br>
+            <br>
+            <br>
+            <div class = "buttons">
+                <a href = "circos_tutorial.html">
+                    <img src = "../images/tutorial.png" width = 150>
+                </a>
+            </div>
+
+        </div>
+        <div id = my_dataviz></div>
+    </div>
 </div>
 
 
