@@ -59,6 +59,14 @@
     #tutorial-container.fade-out {
         opacity: 0;
     }
+    #image-filler {
+        opacity: 1;
+        transition: opacity 0.5s ease-in-out;
+    }
+    #image-filler.hidden {
+        opacity: 0;
+        pointer-events: none;   
+    }
     .intro p {
         white-space: pre-line;
     }
@@ -87,8 +95,8 @@
             </a>
         </div>
     </div>
-    <div class = "image">
-        <img src= "../images/unlabeledcircos.jpg" width = 650>
+    <div class = "image" class = "hidden">
+        <img id = "image-filler" width = 650>
     </div>
 </div>
 </body>
@@ -109,15 +117,16 @@
         "../images/unlabeledcircos.jpg",
         "../images/unlabeledcircos.jpg",
         "../images/labeled.png",
+        "../images/groups.png",
+        "../images/fields.png",
+        "../images/hover.png",
         "../images/unlabeledcircos.jpg",
-        "../images/unlabeledcircos.jpg",
-        "../images/unlabeledcircos.jpg",
-        "../images/unlabeledcircos.jpg",
-        "../images/unlabeledcircos.jpg",
-        "../images/unlabeledcircos.jpg"
+        "../images/zoom.jpg",
+        ""
     ]
         
     const textElement = document.getElementById('tutorial-text');
+    const imageElement = document.getElementById('image-filler');
     const nextButton = document.getElementById('next-btn'); 
     const nextButtonImage = document.querySelector('#next-btn img'); 
     const tutorialContainer = document.getElementById('tutorial-container');
@@ -137,10 +146,19 @@
     }
 
     nextButton.addEventListener('click', (event) => { 
+        tutorialContainer.classList.add('fade-out');
         nextButton.classList.add('hidden');
+        document.querySelector('.image img').classList.add('hidden');
 
         event.preventDefault();
-        tutorialContainer.classList.add('fade-out');
+        
+        setTimeout(() => {
+            nextButton.classList.remove('hidden');
+        }, 4000);  //4000
+        
+        setTimeout(() => {
+            document.querySelector('.image img').classList.remove('hidden');
+        }, 3000); //3000
 
         setTimeout(() => {
             currentStep++;
@@ -152,11 +170,8 @@
                 window.location.href = "circos_main.html";
             }
         }, 400);
-        setTimeout(() => {
-            nextButton.classList.remove('hidden');
-        }, 1000); //change to 3000
         
-
+        
     }
 );
 
@@ -164,7 +179,11 @@
 
     setTimeout(() => {
         nextButton.classList.remove('hidden');
-    }, 1000); //change to 2000
+    }, 2000); 
+
+    setTimeout(() => {
+        document.querySelector('.image img').classList.remove('hidden');
+    }, 3000); 
 
 
 </script>
