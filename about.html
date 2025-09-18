@@ -26,23 +26,42 @@
     .home_button:hover {
         scale: 1.1;
     }
+    figcaption {
+        font-size: 14px;
+    }
+    #figures {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: center;
+    }
+    
 </style>
 
 <body>
+
 <div class = "home_button">
     <a href="index.html">
-        <img src = "../images/home.png" width = 50 height = 50>
+        <img src = "images/home.png" width = 50 height = 50>
     </a>
 </div>
-<img src = "../images/about.png" width = 200 height = 100>
+<img src = "images/about.png" width = 200 height = 100>
 <p> 
     Started in May 2025, this dashboard was created by Anna Yao under the mentorship of Professor Alex Gates in the School of Data Science at UVA. It is an ongoing project that aims to explore creative ways to visualize research and tell a story in the process. The code for this entire project can be found <a href="https://github.com/annayao0602/D3-Research-Visualization">here</a>.
     <br>
     <br>    
 </p>
 <h2><b>How it Began</b></h2>
-<img src = "images/og_circos.png" width = 700 height = 700>
-<img src = "images/og_circos2.png" width = 700 height = 700>
+<div id = figures>
+    <figure>
+        <img src = "images/og_circos.png" width = 700 height = 700>
+        <figcaption>Publications at UVA Relative To Other R1 Institutes</figcaption>
+    </figure>
+    <figure>
+        <img src = "images/og_circos2.png" width = 700 height = 700>
+        <figcaption>Raw Number of Publications at UVA</figcaption>
+    </figure>
+</div>
 <p>
     These initial drafts were created on Circos, a software package known for visualizing genomic data (<a href="https://github.com/annayao0602/Circos-Research-Visualizations">code</a>). As interactivity became a necessary feature, these visualizations were redesigned from scratch using d3.js. Since then, many elements and features have been added on to create a data dashboard.
     <br>

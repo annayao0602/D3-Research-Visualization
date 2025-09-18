@@ -97,7 +97,7 @@
     const tutorialSteps = [
     "This guide will walk you through the key features of this visualization. Click 'Next' to begin.",
     "On your right, this circle showcases every research paper published at UVA as of May 2025.",
-    `These publications are grouped into 4 domains:\n \n Life Sciences, \nSocial Sciences, \nHealth Sciences, \nand Physical Sciences`,
+    `These publications are grouped into 4 domains:\n \n Social Sciences, \nHealth Sciences, \nLife Sciences, \nand Physical Sciences`,
     "Each domain contains groups which are divided on the outer arc. \n \n There are 26 groups altogether",
     "Each group contains fields which are shown in the inner bars. \n \n There are 251 fields altogether",
     "Hover over fields to view the number of publications in that given field and its name. \n \n Fields with more than 10,000 publications are marked with a “+” sign",
@@ -105,6 +105,17 @@
     "Once zoomed in, click on the center circle to return to the main circle",
     "You're all set! Click 'Go to viz' to explore the visualization on your own."
     ];
+    const images = [
+        "../images/unlabeledcircos.jpg",
+        "../images/unlabeledcircos.jpg",
+        "../images/labeled.png",
+        "../images/unlabeledcircos.jpg",
+        "../images/unlabeledcircos.jpg",
+        "../images/unlabeledcircos.jpg",
+        "../images/unlabeledcircos.jpg",
+        "../images/unlabeledcircos.jpg",
+        "../images/unlabeledcircos.jpg"
+    ]
         
     const textElement = document.getElementById('tutorial-text');
     const nextButton = document.getElementById('next-btn'); 
@@ -115,6 +126,7 @@
 
     function showStep(stepIndex) {
         textElement.textContent = tutorialSteps[stepIndex];
+        document.querySelector('.image img').src = images[stepIndex];
 
         if (stepIndex === tutorialSteps.length - 1) {
             nextButtonImage.src = "../images/gotoviz.png"; 
@@ -142,7 +154,7 @@
         }, 400);
         setTimeout(() => {
             nextButton.classList.remove('hidden');
-        }, 1000);
+        }, 1000); //change to 3000
         
 
     }
@@ -152,7 +164,7 @@
 
     setTimeout(() => {
         nextButton.classList.remove('hidden');
-    }, 1000);
+    }, 1000); //change to 2000
 
 
 </script>
