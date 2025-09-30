@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<html>
+
+<head>
+	<script src="https://d3js.org/d3.v7.min.js"></script>
+    <title>Helios-web</title>
+    <link href='https://fonts.googleapis.com/css?family=Jura' rel='stylesheet'>
+
+</head>
+
+<style>
+	html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+			background:#FFFFFF
+        }
+	#netviz {
+            width: 100%;
+            height: 100%;
+			background: #f0f0f0;
+        }
+    .home_button {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 10;
+    }
+    .home_button:hover {
+        scale: 1.1;
+    }
+    #tooltip-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none; 
+        z-index: 30;
+    }
+    .tooltip-text {
+        font-family: 'Jura';
+        font-size: 14px;
+        font-weight: bold;
+    }
+    .tooltip-outline {
+        stroke-linejoin: round;
+    }
+    #legend {
+        position: absolute;
+        font-family: 'Jura';
+        bottom: 20px;
+        left: 20px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        z-index: 20;
+    }
+    #legend h3 {
+        margin: 0 0 10px 0;
+        font-family: 'Jura';
+        font-size: 16px;
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    .legend-color-box {
+        width: 15px;
+        height: 15px;
+        margin-right: 8px;
+        border-radius: 3px;
+    }
+</style>
+
+<body>
+    
+
+<div class = "home_button">
+    <a href="index.html">
+        <img src = "images/home1.png" width = 50 height = 50>
+    </a>
+</div>
+
+<div id="netviz"></div>
+<svg id="tooltip-svg"></svg>
+<div id="legend">
+    <h3>Research Fields</h3>
+    <div id="legend-items"></div>
+</div>
+    
+<script type = "module" src = "helios.js"></script>
+</body>
+</html>
