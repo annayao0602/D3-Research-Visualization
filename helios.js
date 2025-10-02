@@ -190,109 +190,84 @@ helios.nodeColor(node => {
         const group = getGroupForField(node[colorProperty]);
         return hexToRgbNormalized(colorScale(group));
     });
-const legendContainer = d3Select("#legend-items");
-        colorDomains.forEach(domainValue => {
-            const legendItem = legendContainer.append("div").attr("class", "legend-item");
-            legendItem.append("div")
-                .attr("class", "legend-color-box")
-                .style("background-color", colorScale(domainValue));
-            legendItem.append("span").text(domainValue);
-        });
 
-const tooltipSVG = d3Select("#tooltip-svg");
-        const tooltipElement = {
-            group: tooltipSVG.append("g").attr("visibility", "hidden"),
-            outlineText: null,
-            fillText: null,
-        };
+//----LEGEND----- **TODO: FIX AND DEBUG
+const hiddenGroups = new Set();
 
-tooltipElement.outlineText = tooltipElement.group.append("text").attr("class", "tooltip-text tooltip-outline");
-tooltipElement.fillText = tooltipElement.group.append("text").attr("class", "tooltip-text tooltip-fill");
+const legendContainer = d3Select("#legend-items"); 
+colorDomains.forEach(domainValue => {
+	const legendItem = legendContainer.append("div")
+        .attr("class", "legend-item")
+        .style("cursor", "pointer"); 
 
-
-function getLabelStyleColorAndOutline(color) {
-            const rgb = helios.backgroundColor(); 
-            const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
-            if (brightness > 0.5) { // Light background
-                return { fill: "#222222", stroke: "#FFFFFF", strokeWidth: 0.7 };
-            } else { // Dark background
-                return { fill: "#FFFFFF", stroke: "#222222", strokeWidth: 0.7 };
-            }
-        }
-
-
-let stylizeTooltip = (label, color, x, y, isnew) => {
-		if (label) {
-			// tooltipElement.style.left = x + "px";
-			// tooltipElement.style.top = y + "px";
-			if (typeof x !== 'undefined' && typeof y !== 'undefined') {
-				tooltipElement.group.style.transform = `translate(${x}px, ${y}px)`;
-				// tooltipElement.setAttribute('x', x);
-				// tooltipElement.setAttribute('y', y);
-			}
-
-			if (isnew) {
-				// tooltipElement.style.display = "block";
-				let styleData = getLabelStyleColorAndOutline(color);
-				tooltipElement.fillText.attr("fill", styleData.fill);
-				tooltipElement.outlineText.attr("stroke", styleData.stroke);
-				tooltipElement.outlineText.attr("stroke-width", styleData.strokeWidth * 3.0);
-				tooltipElement.group.attr("visibility", "visible");
-			}
-			// set text of the SVG element
-			tooltipElement.fillText.text(label);
-			tooltipElement.outlineText.text(label);
-		} else {
-			tooltipElement.group.attr("visibility", "hidden");
-		}
-	}
-
-
-	let showTooltipForNode = (node, event, isNew) => {
-        if (node && event) {
-            let label = "hello"; //node.Label ?? node.label ?? node.id;
-            stylizeTooltip(label, node.color, event.clientX, event.clientY, isNew);
+    legendItem.append("div")
+        .attr("class", "legend-color-box")
+        .style("background-color", colorScale(domainValue));
+    
+    legendItem.append("span").text(domainValue);
+	legendItem.on("click", () => {
+        // 3. Toggle the group's presence in our hidden set.
+        if (hiddenGroups.has(domainValue)) {
+            hiddenGroups.delete(domainValue); // If it's hidden, unhide it.
+            legendItem.classed("legend-item-hidden", false); // Remove the greyed-out class.
         } else {
-            stylizeTooltip(null);
+            hiddenGroups.add(domainValue); // If it's visible, hide it.
+            legendItem.classed("legend-item-hidden", true); // Add the greyed-out class.
         }
-    }
 
-
-helios.onNodeHoverStart((node, event) => {
-            if (node) {
-                if (node._originalSize === undefined) {
-                    node._originalSize = node.size;
-                }
-                node.size = node._originalSize * 1.5;
-                helios.update(); // Tell helios to redraw with new size
-                
-                showTooltipForNode(node, event, true);
-            }
+        // 4. Apply the filter to Helios.
+        helios.nodeFilter(node => {
+            const group = getGroupForField(node[colorProperty]);
+            // Return true (visible) only if the node's group is NOT in the hidden set.
+            return !hiddenGroups.has(group);
         });
-helios.onNodeHoverMove((node, event) => {
-		showTooltipForNode(node, event, false);
-	});
+
+        // 5. Tell Helios to redraw the scene with the new filter.
+        helios.update();
+    });
+});
+
+//---HOVER INFO BOX---
+const infoBox = d3Select("#info-box");
+function updateInfoBox(label, field) {
+    if (label) {
+        infoBox.style("visibility", "visible");
+        infoBox.style("opacity", 1);
+        // We use .html() here to allow for simple formatting like <strong>
+        infoBox.html(`<strong>Selected Author:</strong> ${label} \n <br> <strong>Research Field:</strong> ${field}`);
+    } else {
+        infoBox.style("visibility", "hidden");
+        infoBox.style("opacity", 0);
+    }
+}
+
+//---NODE INTERACTIONS---
+helios.onNodeHoverStart((node, event) => {
+	if (node) {
+		if (node._originalSize === undefined) {
+			node._originalSize = node.size;
+		}
+		node.size = node._originalSize * 1.5;
+		helios.update(); 
+		const label = node.Label;
+		const field = node[colorProperty];
+        updateInfoBox(label, field);
+	}
+});
 
 helios.onNodeHoverEnd((node) => {
 	if (node) {
 		// Return node to its original size
 		helios.nodeSize(n => n._originalSize || 1);
 		helios.update(); 
-		showTooltipForNode(null);
-
+		updateInfoBox(null);
 	}
 });
-helios.onNodeClick((node, event) => {
-		if (node) {
-			console.log(`Clicked: ${node.ID}`);
-		} else {
-			console.log(`Clicked on background`);
-		}
-	});
 
-	
+
 helios.backgroundColor([1.0,1.0,1.0,1.0]);
 helios.nodesGlobalSizeScale(0.5);
+//----ZOOM ON NODE CLICK----
 helios.onNodeDoubleClick((node) => {
 		if (node) {
 			console.log(`Double Clicked: ${node.ID}`);
@@ -303,3 +278,11 @@ helios.onNodeDoubleClick((node) => {
 
 		}
 	}); 
+helios.onNodeClick((node, event) => {
+		if (node) {
+			helios.centerOnNodes([node],500);
+			console.log(`Clicked: ${node.ID}`);
+		} else {
+			console.log(`Clicked on background`);
+		}
+	});
