@@ -9,7 +9,7 @@
 
 
     <script src="https://d3js.org/d3.v4.js"></script>
-    <script src="circos.js"></script>
+    <script src="circos/circos.js"></script>
 
 </head>
 
@@ -30,7 +30,7 @@
       <div class = controls>
         <label for="dataset-select">Choose a university:</label>
         <select id="dataset-select">
-          <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/numpub.csv">UVA</option>
+          <option value="https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/data/numpub.csv">UVA</option>
       </select>
       </div>
   </header>
@@ -44,12 +44,12 @@
       <div class = "viz_header">
         <h3>Coauthorship Network</h3>
       </div>
-      <a href="helios_main.html">
+      <a href="helios/helios_main.html">
         <div id = "button">
           <img src = "images/button1.png" width = 65 height = 35>
         </div>
       </a>
-      <iframe src="helios_home.html" style="border:none;" height="400" width="500" title="Iframe Example"></iframe>
+      <iframe src="helios/helios_home.html" style="border:none;" height="400" width="500" title="Iframe Example"></iframe>
     </div>
 
     <div id = "box-circos" class="card">
@@ -62,14 +62,14 @@
         </div>
       </a>
       <div id = "my_dataviz">
-        <script src="main_circos.js"></script>
+        <script src="circos/main_circos.js"></script>
       </div>
     </div>
 
   <div id="box-bar" class="card">
     <h3>Publications by Domain</h3>
     <div id = "barchart">
-      <script src = "bar.js"></script>
+      <script src = "barchart/bar.js"></script>
     </div>
     <!--
     <a href="circos/circos_page.html">
