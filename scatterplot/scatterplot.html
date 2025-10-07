@@ -11,7 +11,22 @@
     <link href='https://fonts.googleapis.com/css?family=Jura' rel='stylesheet'>
 
 </head>
-
+<style> 
+    .tooltip {	
+        position: absolute;			
+        text-align: left;			
+        width: auto;					
+        height: auto;					
+        padding: 10px;				
+        font: 12px 'Jura', sans-serif;		
+        background: white;	
+        border: 1px solid #ccc;		
+        border-radius: 8px;			
+        pointer-events: none;			
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        opacity: 0;
+    }
+</style>
 <body>
     <div id="my_scatter"></div>
 
@@ -60,16 +75,18 @@
                     .style("opacity", 0.5)
                     .style("stroke", "black")
 
-            .on("mouseover", function(d) {
+            .on("mouseover", function(event, d) {
                 tooltip.style("opacity", 1);
-                tooltip.html(`<strong>${d.uniqueId}</strong><br>Value: ${parseInt(d.value).toLocaleString()}`);
+                tooltip.html(`<strong>Title</strong>: ${d.Title} <br> <strong>PI</strong>: ${d['Proposal PI']} <br> <strong>Description</strong>: ${d.Description}`)
+                       .style("left", (event.pageX + 15) + "px")
+                       .style("top", (event.pageY - 20) + "px");
                 d3.select(this).attr("fill-opacity", 1);
             })
-            .on("mousemove", function(event) {
-                tooltip.style("left", (d3.event.pageX + 15) + "px")
-                       .style("top", (d3.event.pageY - 20) + "px");
+            .on("mousemove", function(event, d) {
+                tooltip.style("left", (event.pageX + 15) + "px")
+                       .style("top", (event.pageY - 20) + "px");
             })
-            .on("mouseout", function(d) {
+            .on("mouseout", function(event, d) {
                 tooltip.style("opacity", 0);
                 d3.select(this).attr("fill-opacity", 0.7);
             })
