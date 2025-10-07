@@ -27,18 +27,23 @@
             .append("g")
                 .attr("transform",
                     "translate(" + margin.left + "," + margin.top + ")");
-        
-        d3.json("https://cdn.jsdelivr.net/gh/annayao0602/D3-Research-Visualization@main/data/proposals_with_embeddings_full_updated.json").then(function(data) {
-        
+
+        const tooltip = d3.select("body").append("div").attr("class", "tooltip");
+
+        d3.text("../data/proposals_with_embeddings_full_updated.json").then(function(text) {
+            const lines = text.trim().split('\n');
+
+            const data = lines.map(line => JSON.parse(line));
+
             var x = d3.scaleLinear()
-                .domain([0,30])
+                .domain([0,24])
                 .range([ 0, width ]);
             svg.append("g")
                 .attr("transform", "translate(0," + height + ")")
                 .call(d3.axisBottom(x));
         
             var y = d3.scaleLinear()
-                .domain([0, 15])
+                .domain([-10, 15])
                 .range([ height, 0]);
             svg.append("g")
                 .call(d3.axisLeft(y));
@@ -54,6 +59,20 @@
                     .style("fill", "#69b3a2")
                     .style("opacity", 0.5)
                     .style("stroke", "black")
+
+            .on("mouseover", function(d) {
+                tooltip.style("opacity", 1);
+                tooltip.html(`<strong>${d.uniqueId}</strong><br>Value: ${parseInt(d.value).toLocaleString()}`);
+                d3.select(this).attr("fill-opacity", 1);
+            })
+            .on("mousemove", function(event) {
+                tooltip.style("left", (d3.event.pageX + 15) + "px")
+                       .style("top", (d3.event.pageY - 20) + "px");
+            })
+            .on("mouseout", function(d) {
+                tooltip.style("opacity", 0);
+                d3.select(this).attr("fill-opacity", 0.7);
+            })
         })
     
     </script>
