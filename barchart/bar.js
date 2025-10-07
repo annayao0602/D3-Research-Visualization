@@ -9,7 +9,7 @@ var svg = d3.select("#barchart")
     .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.csv("https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/numpub_domain.csv", function(data) {
+d3.csv("https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/data/numpub_domain.csv", function(data) {
     data.forEach(function(d) {
         d.numpub_total = +d.numpub_total;
     });
