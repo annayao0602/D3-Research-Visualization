@@ -28,7 +28,7 @@
                 .attr("transform",
                     "translate(" + margin.left + "," + margin.top + ")");
         
-        d3.json("../data/proposals_with_embeddings_full_updated.json").then(function(data) {
+        d3.json("https://cdn.jsdelivr.net/gh/annayao0602/D3-Research-Visualization@main/data/proposals_with_embeddings_full_updated.json").then(function(data) {
         
             var x = d3.scaleLinear()
                 .domain([0,30])
