@@ -1,1 +1,1 @@
-data/embeddings.json filter=lfs diff=lfs merge=lfs -text
+data/proposals_with_embeddings_full_updated.json filter=lfs diff=lfs merge=lfs -text

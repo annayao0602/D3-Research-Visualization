@@ -17,8 +17,8 @@
 
     <script>
         var margin = {top: 10, right: 30, bottom: 30, left: 60},
-        width = 460 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
+        width = 900 - margin.left - margin.right,
+        height = 700 - margin.top - margin.bottom;
 
         var svg = d3.select("#my_scatter")
             .append("svg")
@@ -28,7 +28,7 @@
                 .attr("transform",
                     "translate(" + margin.left + "," + margin.top + ")");
         
-        d3.json("https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/data/embeddings.json").then(function(data) {
+        d3.json("../data/proposals_with_embeddings_full_updated.json").then(function(data) {
         
             var x = d3.scaleLinear()
                 .domain([0,30])
