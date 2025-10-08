@@ -195,6 +195,15 @@ helios.nodeColor(node => {
 const hiddenGroups = new Set();
 
 const legendContainer = d3Select("#legend-items"); 
+
+function applyFilter() {
+	const filteredNodes = parsed.nodes.filter(node => {
+		const group = getGroupForField(node[colorProperty]);
+		return !hiddenGroups.has(group);
+	});
+
+
+}
 colorDomains.forEach(domainValue => {
 	const legendItem = legendContainer.append("div")
         .attr("class", "legend-item")
@@ -206,24 +215,23 @@ colorDomains.forEach(domainValue => {
     
     legendItem.append("span").text(domainValue);
 	legendItem.on("click", () => {
-        // 3. Toggle the group's presence in our hidden set.
         if (hiddenGroups.has(domainValue)) {
-            hiddenGroups.delete(domainValue); // If it's hidden, unhide it.
+            hiddenGroups.delete(domainValue); 
             legendItem.classed("legend-item-hidden", false); // Remove the greyed-out class.
         } else {
             hiddenGroups.add(domainValue); // If it's visible, hide it.
             legendItem.classed("legend-item-hidden", true); // Add the greyed-out class.
+			console.log(`Hiding group: ${domainValue}`);
         }
 
-        // 4. Apply the filter to Helios.
         helios.nodeFilter(node => {
             const group = getGroupForField(node[colorProperty]);
-            // Return true (visible) only if the node's group is NOT in the hidden set.
             return !hiddenGroups.has(group);
         });
 
-        // 5. Tell Helios to redraw the scene with the new filter.
         helios.update();
+		console.log(`Toggled group: ${domainValue}`);
+		console.log(`Currently hidden groups: ${Array.from(hiddenGroups).join(", ")}`);
     });
 });
 
