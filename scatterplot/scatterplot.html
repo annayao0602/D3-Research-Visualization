@@ -7,11 +7,25 @@
 
 <head>
 	<script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/d3fc"></script>
     <title>Embeddings Scatterplot</title>
     <link href='https://fonts.googleapis.com/css?family=Jura' rel='stylesheet'>
 
 </head>
 <style> 
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; 
+        font-family: 'Jura', sans-serif;
+        background-color: #f9f9f9;
+        font-size: 14px;
+    }
+    #my_scatter {
+        width: 60%;
+        height: 100%;
+    }
     .tooltip {	
         position: absolute;			
         text-align: left;			
@@ -26,71 +40,158 @@
         box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         opacity: 0;
     }
+    .card {
+        background-color: #FFFFFF;
+        box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 4px 10px 0 rgba(0, 0, 0, 0.19);
+        padding: 10px;
+        min-height:0;
+        border-radius: 15px;
+    }
+    .scatter_container {
+        display: flex;
+        height: 100vh;
+        width: 100vw;
+    }
+    #panel {
+        width: 40%;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
 </style>
 <body>
-    <div id="my_scatter"></div>
+    <div class = "scatter_container">
+        <div id="my_scatter"></div>
+        <div id = "panel">
+            <div id = "controls" class = "card">
+                <h1>Controls</h1>
+            </div>
+            <div id = "info" class = "card">
+                <h1>Information</h1>
+            </div>
+        </div>
+    </div>
 
     <script>
-        var margin = {top: 10, right: 30, bottom: 30, left: 60},
-        width = 900 - margin.left - margin.right,
-        height = 700 - margin.top - margin.bottom;
 
-        var svg = d3.select("#my_scatter")
-            .append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-                .attr("transform",
-                    "translate(" + margin.left + "," + margin.top + ")");
-
-        const tooltip = d3.select("body").append("div").attr("class", "tooltip");
-
+        //----D3FC version with WebGL ----
         d3.text("../data/proposals_with_embeddings_full_updated.json").then(function(text) {
             const lines = text.trim().split('\n');
 
-            const data = lines.map(line => JSON.parse(line));
+            const data = lines.map(line => {
+                const { Title, 'Proposal PI' : ProposalPI, 'Proposal Prime Sponsor Category' : ProposalPrimeSponsorCategory, 'HURON Authorized Amount' : HURONAuthorizedAmount, umap_x, umap_y } = JSON.parse(line);
+                return { Title, 'Proposal PI': ProposalPI,  'Proposal Prime Sponsor Category' : ProposalPrimeSponsorCategory ?? 'No Primary', 'HURON Authorized Amount' : HURONAuthorizedAmount ?? '0', umap_x: +umap_x, umap_y: +umap_y };
+            });
 
-            var x = d3.scaleLinear()
-                .domain([0,24])
-                .range([ 0, width ]);
-            svg.append("g")
-                .attr("transform", "translate(0," + height + ")")
-                .call(d3.axisBottom(x));
-        
-            var y = d3.scaleLinear()
-                .domain([-10, 15])
-                .range([ height, 0]);
-            svg.append("g")
-                .call(d3.axisLeft(y));
-        
-            svg.append('g')
-                .selectAll("dot")
-                .data(data)
-                .enter()
-                .append("circle")
-                    .attr("cx", function (d) { return x(d.umap_x); } )
-                    .attr("cy", function (d) { return y(d.umap_y); } )
-                    .attr("r", 3)
-                    .style("fill", "#69b3a2")
-                    .style("opacity", 0.5)
-                    .style("stroke", "black")
+            const x = d3.scaleLinear()
+            const y = d3.scaleLinear()
 
-            .on("mouseover", function(event, d) {
-                tooltip.style("opacity", 1);
-                tooltip.html(`<strong>Title</strong>: ${d.Title} <br> <strong>PI</strong>: ${d['Proposal PI']} <br> <strong>Description</strong>: ${d.Description}`)
-                       .style("left", (event.pageX + 15) + "px")
-                       .style("top", (event.pageY - 20) + "px");
-                d3.select(this).attr("fill-opacity", 1);
-            })
-            .on("mousemove", function(event, d) {
-                tooltip.style("left", (event.pageX + 15) + "px")
-                       .style("top", (event.pageY - 20) + "px");
-            })
-            .on("mouseout", function(event, d) {
-                tooltip.style("opacity", 0);
-                d3.select(this).attr("fill-opacity", 0.7);
-            })
+            x.domain([0, 24]).nice();
+            y.domain([-5,15]).nice();
+            console.log(x.domain(), y.domain());
+
+            const colorScale = d3.scaleOrdinal(d3.schemeSet1);
+
+            const fillColor = fc
+                .webglFillColor()
+                .value(d => {
+                    if (d['Proposal Prime Sponsor Category'] === 'No Primary') {
+                        return [0.5, 0.0, 0.9, 1.0]; 
+                    }
+                    const color = d3.color(colorScale(d['Proposal Prime Sponsor Category']));
+                    return [color.r / 255, color.g / 255, color.b / 255, 1.0]; 
+                })
+                .data(data);
+
+            const scatter = fc
+                .seriesWebglPoint()
+                .type(d3.symbolCircle)
+                .size(50)
+                .xScale(x)
+                .yScale(y)
+                .crossValue(d => d.umap_x)
+                .mainValue(d => d.umap_y)
+                .decorate(program => {
+                    fillColor(program);
+                    const context = program.context();
+                    context.enable(context.BLEND);
+                    context.blendFunc(context.SRC_ALPHA, context.ONE_MINUS_SRC_ALPHA);
+                });
+
+            const tooltip = d3.select("body").append("div").attr("class", "tooltip");
+
+            const informationOverlay = fc
+                .seriesSvgPoint()
+                .type(d3.symbolCircle)
+                .size(50)
+                .xScale(x)
+                .yScale(y)
+                .crossValue(d => d.umap_x)
+                .mainValue(d => d.umap_y)
+                .decorate(selection => {
+                    selection.select('path')
+                        .style('fill', 'transparent')
+                        .style('stroke', 'transparent')
+                        .style('stroke-width', 0.8);
+                    selection
+                        .on('mouseover', (event, d) => {
+                            d3.select(event.currentTarget)
+                                .select('path')
+                                .style('stroke', 'black')
+                                .style('stroke-opacity', 1);
+                            tooltip.style("opacity", 0.8);
+                            tooltip.html(`<strong>Title</strong>: ${d.Title} <br> <strong>PI</strong>: ${d['Proposal PI']} <br> <strong>Primary Sponsor</strong>: ${d['Proposal Prime Sponsor Category']}`)
+                                .style("left", (event.pageX + 15) + "px")
+                                .style("top", (event.pageY - 20) + "px");
+                        })
+                        .on('mouseout', (event, d) => {
+                            d3.select(event.currentTarget)
+                                .select('path')
+                                .style('stroke-opacity', 0);
+                            tooltip.style("opacity", 0);
+                        })
+                        .on('click', (event, d) => {
+                            d3.select("#info").html(`
+                                <h2>Proposal Information</h2>
+                                <p><strong>Title:</strong> ${d.Title}</p>
+                                <p><strong>PI:</strong> ${d['Proposal PI']}</p>
+                                <p><strong>Primary Sponsor Category:</strong> ${d['Proposal Prime Sponsor Category']}</p>
+                                <p><strong>HURON Authorized Amount:</strong> $${d['HURON Authorized Amount']}</p>
+                            `);
+                        });
+                });
+            
+
+            const chart = fc
+                .chartCartesian(x, y)
+                .webglPlotArea(scatter)
+                .svgPlotArea(informationOverlay);
+                
+
+            const render = () => {
+                d3.select('#my_scatter')
+                    .datum(data)
+                    .call(chart);
+            };
+
+            const zoom = fc.zoom().on('zoom', render);
+
+            d3.select('#my_scatter').call(zoom, x, y);
+        
+            render();
+
         })
+
+        //color code: primary sponsor (NSF, NIH, DOE, etc.), awarded or not, amount awarded (logged)
+        //grants, pubs, authors, test for 3x the data and see if lag is bad
+        //department name? get from gates
+        //index.html - add transparent backing to co authorship network
+        //datashader
+        
     
     </script>
 
