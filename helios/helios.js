@@ -215,11 +215,22 @@ colorDomains.forEach(domainValue => {
     
     legendItem.append("span").text(domainValue);
 	legendItem.on("click", () => {
-        if (hiddenGroups.has(domainValue)) {
+		/*
+		LOGIC:
+		if hidden group contains 1 or more domains:
+			hide all other domains except clicked domain
+			if any other domain is clicked, unhide it and keep all others hidden
+		else if hidden group is empty:
+			show all domains
+		*/
+
+
+		//if clicked, make all other groups part of hidden group
+        /*if (!hiddenGroups.has(domainValue)) { //if item is in hidden groups, unhide it
             hiddenGroups.delete(domainValue); 
-            legendItem.classed("legend-item-hidden", false); // Remove the greyed-out class.
+            legendItem.classed("legend-item-hidden", false); 
         } else {
-            hiddenGroups.add(domainValue); // If it's visible, hide it.
+            hiddenGroups.add(all other domains); //if item is not in hidden groups, hide all other classes in hidden groups
             legendItem.classed("legend-item-hidden", true); // Add the greyed-out class.
 			console.log(`Hiding group: ${domainValue}`);
         }
@@ -231,7 +242,7 @@ colorDomains.forEach(domainValue => {
 
         helios.update();
 		console.log(`Toggled group: ${domainValue}`);
-		console.log(`Currently hidden groups: ${Array.from(hiddenGroups).join(", ")}`);
+		console.log(`Currently hidden groups: ${Array.from(hiddenGroups).join(", ")}`); */
     });
 });
 
