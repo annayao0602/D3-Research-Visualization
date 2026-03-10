@@ -104,6 +104,61 @@
         margin-right: 8px;
         border-radius: 3px;
     }
+    #question-button {
+        position: absolute;
+        bottom: 30px;
+        right: 30px;
+        width: 30px;
+        height: 30px;
+        background-color: #3e71a8;
+        color: rgb(202, 220, 255);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Jura';
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 10;
+    }
+    #question-button:hover {
+        background-color: #2e4f7a;
+        scale: 1.1;
+    }
+    #help-box {
+        position: absolute;
+        bottom: 70px; /* Positioned just above the help button */
+        right: 20px;
+        width: 250px;
+        background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent like legend */
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        font-family: 'Jura', sans-serif;
+        z-index: 49;
+        
+        /* Hidden by default */
+        visibility: hidden;
+        opacity: 0;
+        transition: visibility 0.2s, opacity 0.2s;
+    }
+
+    #help-box h3 {
+        margin: 0 0 10px 0;
+        font-size: 16px;
+    }
+
+    #help-box p {
+        margin: 0 0 8px 0;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .show-help {
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
 </style>
 
 <body>
@@ -121,7 +176,15 @@
     <h3>Research Fields</h3>
     <div id="legend-items"></div>
 </div>
+<div id="question-button">?</div>
+<div id="help-box">
+    <h3>About this Visualization</h3>
+    <p><strong>Hover</strong> over a node to see author details.</p>
+    <p><strong>Click</strong> a category in the legend to filter by research field.</p>
+    <p><strong>Double-click</strong> a node to zoom in.</p>
+</div>
     
-<script type = "module" src = "helios.js"></script>
+<script type = "module" src = "helios.js">
+</script>
 </body>
 </html>

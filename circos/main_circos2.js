@@ -8,8 +8,8 @@ var CircosOptions = {
 }
 
 function loadDataAndDraw() {
-    const selectedFile = d3.select("#dataset-select").property("value");
-    const selectedUniversity = d3.select("#dataset-select option:checked").text();
+    const selectedFile = "https://raw.githubusercontent.com/annayao0602/D3-Research-Visualization/main/data/numpub.csv";
+    const selectedUniversity = "UVA"; // Hardcoded for now
     d3.select("#chart-title").text("Research Publications at " + selectedUniversity);
     
     d3.select("#my_dataviz").html("");

@@ -110,22 +110,22 @@ function hexToRgbNormalized(hex) {
 //----CREATING VIZ----
 
 const fieldToGroupMap = {
-        'Environmental science': 'Earth Sciences',
-        'Geology': 'Earth Sciences',
-        'Geography': 'Earth Sciences',
+        'Environmental science': 'Life Sciences',
+        'Geology': 'Life Sciences',
+        'Geography': 'Life Sciences',
         'Physics': 'Physical Sciences',
         'Chemistry': 'Physical Sciences',
         'Materials science': 'Engineering',
-        'Biology': 'Biology',
+        'Biology': 'Biochemistry, genetics, and molecular biology',
         'Medicine': 'Medicine',
-        'Computer science': 'Computer Science',
+        'Computer science': 'Engineering',
         'Mathematics': 'Physical Sciences',
         'Engineering': 'Engineering',
         'Psychology': 'Social Sciences',
         'Sociology': 'Social Sciences',
-        'Economics': 'Economics & Business',
+        'Economics': 'Social Sciences',
         'Political science': 'Social Sciences',
-        'Business': 'Economics & Business',
+        'Business': 'Social Sciences',
         'History': 'Humanities',
         'Philosophy': 'Humanities',
         'Art': 'Humanities',
@@ -170,21 +170,18 @@ const colorDomains = [...new Set(
 colorDomains.sort(); 
 console.log(colorDomains);
 
-const customPalette = [
-        '#d81616ff', // Bright Red
-        '#ff7b00ff', // Bright Orange
-        '#6c3c2dff', // Brown
-        '#a61065ff', // Magenta
-        '#6a0dad', // Deep Purple
-        '#ad5900ff', // Burnt Orange
-        '#ffbf1cff', // Gold
-        '#800000', // Maroon
-        '#ef867bff', // Salmon Pink
-        '#855c33ff',  // Tan
-		'#9d1c1cff'
-        ];
+const customColors = [
+    "#900c3f", // deep burgundy
+    "#a1339bff", // crimson
+    "#ff5733", // vibrant orange
+    "#d87040", // terracotta
+	"#ffc300", // golden yellow
+    "#4b4f8cff", // warm brown
+    "#d45087", // warm rose
+    "#f194b4"  // soft pink
+];
 
-const colorScale = scaleOrdinal(customPalette).domain(colorDomains);
+const colorScale = scaleOrdinal(customColors).domain(colorDomains);
 
 helios.nodeColor(node => {
         const group = getGroupForField(node[colorProperty]);
@@ -201,9 +198,11 @@ function applyFilter() {
 		const group = getGroupForField(node[colorProperty]);
 		return !hiddenGroups.has(group);
 	});
-
-
+	helios.nodes(filteredNodes);
 }
+
+let highlightedGroup = [];
+
 colorDomains.forEach(domainValue => {
 	const legendItem = legendContainer.append("div")
         .attr("class", "legend-item")
@@ -215,36 +214,34 @@ colorDomains.forEach(domainValue => {
     
     legendItem.append("span").text(domainValue);
 	legendItem.on("click", () => {
-		/*
-		LOGIC:
-		if hidden group contains 1 or more domains:
-			hide all other domains except clicked domain
-			if any other domain is clicked, unhide it and keep all others hidden
-		else if hidden group is empty:
-			show all domains
-		*/
-
-
-		//if clicked, make all other groups part of hidden group
-        /*if (!hiddenGroups.has(domainValue)) { //if item is in hidden groups, unhide it
-            hiddenGroups.delete(domainValue); 
-            legendItem.classed("legend-item-hidden", false); 
-        } else {
-            hiddenGroups.add(all other domains); //if item is not in hidden groups, hide all other classes in hidden groups
-            legendItem.classed("legend-item-hidden", true); // Add the greyed-out class.
-			console.log(`Hiding group: ${domainValue}`);
-        }
-
-        helios.nodeFilter(node => {
+		if (highlightedGroup.includes(domainValue)) {
+			highlightedGroup = highlightedGroup.filter(g => g !== domainValue);
+		} else {
+			highlightedGroup.push(domainValue);
+		}
+		console.log(`Highlighted groups: ${highlightedGroup.join(", ")}`);
+		legendContainer.selectAll(".legend-item")
+            .style("opacity", function() {
+                const text = d3Select(this).select("span").text();
+                // If nothing is highlighted, show all. Otherwise, dim the unselected.
+                if (highlightedGroup.length === 0) return 1.0;
+                return highlightedGroup.includes(text) ? 1.0 : 0.2;
+            });
+        
+        helios.nodeColor(node => {
             const group = getGroupForField(node[colorProperty]);
-            return !hiddenGroups.has(group);
+            const rgb = hexToRgbNormalized(colorScale(group));
+            if (highlightedGroup.length > 0 && !highlightedGroup.includes(group)) {
+                return [0.8, 0.8, 0.8, 0.1]; // Dimmed, highly transparent gray
+            }
+            return [rgb[0], rgb[1], rgb[2], 1.0]; // Normal color
         });
+        
 
         helios.update();
-		console.log(`Toggled group: ${domainValue}`);
-		console.log(`Currently hidden groups: ${Array.from(hiddenGroups).join(", ")}`); */
     });
-});
+		
+    });
 
 //---HOVER INFO BOX---
 const infoBox = d3Select("#info-box");
@@ -269,15 +266,17 @@ helios.onNodeHoverStart((node, event) => {
 		node.size = node._originalSize * 1.5;
 		helios.update(); 
 		const label = node.Label;
+		d3Select("#netviz").style("cursor", "pointer");
 		const field = node[colorProperty];
         updateInfoBox(label, field);
 	}
 });
 
-helios.onNodeHoverEnd((node) => {
+helios.onNodeHoverEnd((node, event) => {
 	if (node) {
 		// Return node to its original size
-		helios.nodeSize(n => n._originalSize || 1);
+		node.size = node._originalSize || 1;
+		d3Select("#netviz").style("cursor", "default");
 		helios.update(); 
 		updateInfoBox(null);
 	}
@@ -286,7 +285,7 @@ helios.onNodeHoverEnd((node) => {
 
 helios.backgroundColor([1.0,1.0,1.0,1.0]);
 helios.nodesGlobalSizeScale(0.5);
-//----ZOOM ON NODE CLICK----
+
 helios.onNodeDoubleClick((node) => {
 		if (node) {
 			console.log(`Double Clicked: ${node.ID}`);
@@ -305,3 +304,10 @@ helios.onNodeClick((node, event) => {
 			console.log(`Clicked on background`);
 		}
 	});
+
+const helpButton = document.getElementById("question-button");
+const helpBox = document.getElementById("help-box");
+
+helpButton.addEventListener("click", () => {
+    helpBox.classList.toggle("show-help");
+});
