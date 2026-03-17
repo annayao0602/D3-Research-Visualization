@@ -188,18 +188,10 @@ helios.nodeColor(node => {
         return hexToRgbNormalized(colorScale(group));
     });
 
-//----LEGEND----- **TODO: FIX AND DEBUG
+//----LEGEND----- 
 const hiddenGroups = new Set();
 
 const legendContainer = d3Select("#legend-items"); 
-
-function applyFilter() {
-	const filteredNodes = parsed.nodes.filter(node => {
-		const group = getGroupForField(node[colorProperty]);
-		return !hiddenGroups.has(group);
-	});
-	helios.nodes(filteredNodes);
-}
 
 let highlightedGroup = [];
 
@@ -259,7 +251,7 @@ function updateInfoBox(label, field) {
 
 //---NODE INTERACTIONS---
 helios.onNodeHoverStart((node, event) => {
-	if (node) {
+	if (node && highlightedGroup.includes(getGroupForField(node[colorProperty])) || highlightedGroup.length === 0) {
 		if (node._originalSize === undefined) {
 			node._originalSize = node.size;
 		}
@@ -286,18 +278,20 @@ helios.onNodeHoverEnd((node, event) => {
 helios.backgroundColor([1.0,1.0,1.0,1.0]);
 helios.nodesGlobalSizeScale(0.5);
 
+
 helios.onNodeDoubleClick((node) => {
 		if (node) {
 			console.log(`Double Clicked: ${node.ID}`);
 			helios.centerOnNodes([node],500);
 		} else {
 			console.log(`Double clicked on background`);
-			helios.centerOnNodes([]); 
+			helios.centerOnNodes([],500); 
 
 		}
 	}); 
-helios.onNodeClick((node, event) => {
-		if (node) {
+
+helios.onNodeClick((node) => {
+		if (node && highlightedGroup.includes(getGroupForField(node[colorProperty])) || highlightedGroup.length === 0) {
 			helios.centerOnNodes([node],500);
 			console.log(`Clicked: ${node.ID}`);
 		} else {
