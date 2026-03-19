@@ -110,31 +110,31 @@ function hexToRgbNormalized(hex) {
 //----CREATING VIZ----
 
 const fieldToGroupMap = {
-        'Environmental science': 'Life Sciences',
-        'Geology': 'Life Sciences',
-        'Geography': 'Life Sciences',
-        'Physics': 'Physical Sciences',
-        'Chemistry': 'Physical Sciences',
-        'Materials science': 'Engineering',
-        'Biology': 'Biochemistry, genetics, and molecular biology',
-        'Medicine': 'Medicine',
-        'Computer science': 'Engineering',
-        'Mathematics': 'Physical Sciences',
-        'Engineering': 'Engineering',
-        'Psychology': 'Social Sciences',
-        'Sociology': 'Social Sciences',
-        'Economics': 'Social Sciences',
-        'Political science': 'Social Sciences',
-        'Business': 'Social Sciences',
-        'History': 'Humanities',
-        'Philosophy': 'Humanities',
-        'Art': 'Humanities',
-    };
+	'Environmental science': 'Life Sciences',
+	'Geology': 'Life Sciences',
+	'Geography': 'Life Sciences',
+	'Physics': 'Physical Sciences',
+	'Chemistry': 'Physical Sciences',
+	'Materials science': 'Engineering',
+	'Biology': 'Biochemistry, genetics, and molecular biology',
+	'Medicine': 'Medicine',
+	'Computer science': 'Engineering',
+	'Mathematics': 'Physical Sciences',
+	'Engineering': 'Engineering',
+	'Psychology': 'Social Sciences',
+	'Sociology': 'Social Sciences',
+	'Economics': 'Social Sciences',
+	'Political science': 'Social Sciences',
+	'Business': 'Social Sciences',
+	'History': 'Humanities',
+	'Philosophy': 'Humanities',
+	'Art': 'Humanities',
+};
 
-    // Helper function to get the group for a given field
-    function getGroupForField(field) {
-        return fieldToGroupMap[field] || 'Other'; // Default to 'Other' if a field isn't in our map
-    }
+// Helper function to get the group for a given field
+function getGroupForField(field) {
+	return fieldToGroupMap[field] || 'Other'; // Default to 'Other' if a field isn't in our map
+}
 
 
 const parsed = GMLParse(gmlData);
@@ -189,8 +189,6 @@ helios.nodeColor(node => {
     });
 
 //----LEGEND----- 
-const hiddenGroups = new Set();
-
 const legendContainer = d3Select("#legend-items"); 
 
 let highlightedGroup = [];
@@ -215,19 +213,11 @@ colorDomains.forEach(domainValue => {
 		legendContainer.selectAll(".legend-item")
             .style("opacity", function() {
                 const text = d3Select(this).select("span").text();
-                // If nothing is highlighted, show all. Otherwise, dim the unselected.
                 if (highlightedGroup.length === 0) return 1.0;
                 return highlightedGroup.includes(text) ? 1.0 : 0.2;
             });
         
-        helios.nodeColor(node => {
-            const group = getGroupForField(node[colorProperty]);
-            const rgb = hexToRgbNormalized(colorScale(group));
-            if (highlightedGroup.length > 0 && !highlightedGroup.includes(group)) {
-                return [0.8, 0.8, 0.8, 0.1]; // Dimmed, highly transparent gray
-            }
-            return [rgb[0], rgb[1], rgb[2], 1.0]; // Normal color
-        });
+        updateNetworkColors();
         
 
         helios.update();
@@ -251,7 +241,15 @@ function updateInfoBox(label, field) {
 
 //---NODE INTERACTIONS---
 helios.onNodeHoverStart((node, event) => {
-	if (node && highlightedGroup.includes(getGroupForField(node[colorProperty])) || highlightedGroup.length === 0) {
+	if (!node) return;
+
+	const group = getGroupForField(node[colorProperty]);
+    const label = (node.Label || "").toLowerCase();
+
+    const isLegendMatch = highlightedGroup.length === 0 || highlightedGroup.includes(group);
+    const isSearchMatch = currentSearchTerm === "" || label.includes(currentSearchTerm);
+
+	if (isLegendMatch && isSearchMatch) {
 		if (node._originalSize === undefined) {
 			node._originalSize = node.size;
 		}
@@ -291,7 +289,16 @@ helios.onNodeDoubleClick((node) => {
 	}); 
 
 helios.onNodeClick((node) => {
-		if (node && highlightedGroup.includes(getGroupForField(node[colorProperty])) || highlightedGroup.length === 0) {
+	if (!node) {
+		return;
+	}
+	const group = getGroupForField(node[colorProperty]);
+    const label = (node.Label || "").toLowerCase();
+
+    const isLegendMatch = highlightedGroup.length === 0 || highlightedGroup.includes(group);
+    const isSearchMatch = currentSearchTerm === "" || label.includes(currentSearchTerm);
+
+		if (isLegendMatch && isSearchMatch) {
 			helios.centerOnNodes([node],500);
 			console.log(`Clicked: ${node.ID}`);
 		} else {
@@ -299,9 +306,92 @@ helios.onNodeClick((node) => {
 		}
 	});
 
-const helpButton = document.getElementById("question-button");
-const helpBox = document.getElementById("help-box");
+//--- TUTORIAL / HELP LOGIC ---
+const tutorialModal = document.getElementById("tutorial-modal");
+const tutorialContent = document.getElementById("tutorial-content");
+const tutorialNext = document.getElementById("tutorial-next");
+const questionButton = document.getElementById("question-button");
+const tutorialClose = document.getElementById("tutorial-close");
 
-helpButton.addEventListener("click", () => {
-    helpBox.classList.toggle("show-help");
+const tutorialSlides = [
+    "<h3>Welcome to the Co-Authorship Network</h3><p>This map visualizes connections and collaborations between UVA researchers.</p>",
+    "<h3>Interacting with Nodes</h3><p><strong>Hover</strong> over a node to view the author's details.<br><br><strong>Click</strong> to zoom into a specific author, and <strong>Double-click</strong> anywhere to zoom back out.</p>",
+    "<h3>Search & Filter</h3><p>Use the <strong>Search Bar</strong> (top right) to find specific authors, or click a field in the <strong>Legend</strong> (bottom left) to isolate specific research domains.</p>"
+];
+
+let currentSlide = 0;
+
+function renderSlide(index) {
+    currentSlide = index;
+    tutorialContent.innerHTML = tutorialSlides[currentSlide];
+    
+    if (currentSlide === tutorialSlides.length - 1) {
+        tutorialNext.innerText = "Show Network";
+    } else {
+        tutorialNext.innerText = "Next";
+    }
+}
+
+tutorialClose.addEventListener("click", () => {
+	tutorialModal.classList.add("hidden");
 });
+
+tutorialNext.addEventListener("click", () => {
+    if (currentSlide < tutorialSlides.length - 1) {
+        renderSlide(currentSlide + 1);
+    } else {
+        tutorialModal.classList.add("hidden");
+    }
+});
+
+questionButton.addEventListener("click", () => {
+    renderSlide(0); 
+    tutorialModal.classList.remove("hidden"); 
+});
+
+renderSlide(0);
+
+//---SEARCH BAR LOGIC---
+const searchInput = document.getElementById("author-search");
+let currentSearchTerm = "";
+const clearBtn = document.getElementById("clear-search");
+
+function updateNetworkColors() {
+    helios.nodeColor(node => {
+        const group = getGroupForField(node[colorProperty]);
+        const rgb = hexToRgbNormalized(colorScale(group));
+        
+        const label = (node.Label || "").toLowerCase();
+
+        let isLegendMatch = highlightedGroup.length === 0 || highlightedGroup.includes(group);
+        
+        let isSearchMatch = currentSearchTerm === "" || label.includes(currentSearchTerm);
+
+        if (isLegendMatch && isSearchMatch) {
+            return [rgb[0], rgb[1], rgb[2], 1.0]; 
+        } else {  
+            return [0.9, 0.9, 0.9, 0.1]; 
+        }
+    });
+    
+    helios.update();
+}
+
+searchInput.addEventListener("input", (e) => {
+    currentSearchTerm = e.target.value.toLowerCase();
+	console.log(`Current search term: "${currentSearchTerm}"`);
+	if (currentSearchTerm.length > 0) {
+        clearBtn.style.display = "block";
+    } else {
+        clearBtn.style.display = "none";
+    }
+    updateNetworkColors();
+});
+
+clearBtn.addEventListener("click", () => {
+    searchInput.value = ""; 
+    currentSearchTerm = ""; 
+    clearBtn.style.display = "none"; 
+    updateNetworkColors(); 
+});
+

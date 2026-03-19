@@ -126,38 +126,135 @@
         background-color: #2e4f7a;
         scale: 1.1;
     }
-    #help-box {
-        position: absolute;
-        bottom: 70px; /* Positioned just above the help button */
-        right: 20px;
-        width: 250px;
-        background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent like legend */
-        border-radius: 8px;
-        padding: 15px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    /* --- TUTORIAL MODAL STYLES --- */
+    #tutorial-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.3); /* Dark screen overlay */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
         font-family: 'Jura', sans-serif;
-        z-index: 49;
-        
-        /* Hidden by default */
-        visibility: hidden;
+        opacity: 1;
+        transition: opacity 0.7s ease;
+    }
+
+    #tutorial-modal.hidden {
         opacity: 0;
-        transition: visibility 0.2s, opacity 0.2s;
+        pointer-events: none; 
     }
 
-    #help-box h3 {
-        margin: 0 0 10px 0;
+    #tutorial-card {
+        position: relative;
+        background: rgba(255, 255, 255, 0.8); 
+        backdrop-filter: blur(5px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); 
+        border-radius: 12px;
+        padding: 30px;
+        width: 400px;
+        max-width: 90%;
+        text-align: center;
+    }
+    #tutorial-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        line-height: 1;
+        color: #999;
+        cursor: pointer;
+        transition: color 0.2s;
+        padding: 0;
+    }
+
+    #tutorial-close:hover {
+        color: #333;
+    }
+
+    #tutorial-content {
         font-size: 16px;
+        line-height: 1.5;
+        margin-bottom: 25px;
+        min-height: 90px; 
     }
 
-    #help-box p {
-        margin: 0 0 8px 0;
-        font-size: 14px;
-        line-height: 1.4;
+    #tutorial-content h3 {
+        margin-top: 0;
+        color: #4d76a2;
+    }
+
+    #tutorial-next {
+        background-color: #3e71a8;
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 20px;
+        font-family: 'Jura', sans-serif;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+    }
+
+    #tutorial-next:hover {
+        background-color: #3b587e;
+        transform: scale(1.05);
     }
 
     .show-help {
         visibility: visible !important;
         opacity: 1 !important;
+    }
+    #search-container {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 20;
+        font-family: 'Jura', sans-serif;
+        display: flex;
+        align-items: center; 
+    }
+
+    #author-search {
+        padding: 10px 35px 10px 16px; 
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        width: 250px;
+        font-family: 'Jura', sans-serif;
+        font-size: 14px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        outline: none;
+        background-color: rgba(255, 255, 255, 0.9);
+        transition: border-color 0.2s, box-shadow 0.2s;
+        box-sizing: border-box; 
+    }
+
+    #author-search:focus {
+        border-color: #3e71a8;
+        box-shadow: 0 2px 8px rgba(62, 113, 168, 0.3);
+    }
+
+    #clear-search {
+        position: absolute;
+        right: 12px;
+        background: none;
+        border: none;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        color: #999;
+        display: none; 
+        padding: 0;
+    }
+
+    #clear-search:hover {
+        color: #333;
     }
 </style>
 
@@ -172,17 +269,21 @@
 </div>
 
 <div id="netviz"></div>
+<div id="search-container">
+    <input type="text" id="author-search" placeholder="Search authors...">
+    <button id="clear-search" aria-label="Clear search">&times;</button>
+</div>
 <div id="legend">
     <h3>Research Fields</h3>
     <div id="legend-items"></div>
 </div>
 <div id="question-button">?</div>
-<div id="help-box">
-    <h3>About this Visualization</h3>
-    <p><strong>Hover</strong> over a node to see author and field details.</p>
-    <p><strong>Click</strong> a category in the legend to filter by research field.</p>
-    <p><strong>Click</strong> a node to zoom in.</p>
-    <p><strong>Double-click</strong> a node to reset the view.</p>
+<div id="tutorial-modal">
+    <div id="tutorial-card">
+        <button id="tutorial-close" aria-label="Close tutorial">&times;</button>
+        <div id="tutorial-content"></div>
+        <button id="tutorial-next">Next</button>
+    </div>
 </div>
     
 <script type = "module" src = "helios.js">
