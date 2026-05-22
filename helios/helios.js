@@ -3,9 +3,8 @@ import { gmlData } from "../data/uva_data.js";
 import {Helios} from "https://cdn.skypack.dev/helios-web?min";
 import { scaleOrdinal } from "https://cdn.skypack.dev/d3-scale?min";
 import { select as d3Select } from "https://cdn.skypack.dev/d3-selection?min";
-import { schemeCategory10, schemePaired } from "https://cdn.skypack.dev/d3-scale-chromatic?min";
-import { schemeTableau10 } from "https://cdn.skypack.dev/d3-scale-chromatic?min";
-import { color as d3Color } from "https://cdn.skypack.dev/d3-color?min";
+import { schemeCategory10, schemePaired, schemeTableau10 } from "https://esm.sh/d3-scale-chromatic";
+import { color as d3Color } from "https://esm.sh/d3-color";
 
 
 //---HELPER METHODS---
