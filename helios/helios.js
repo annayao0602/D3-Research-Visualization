@@ -107,6 +107,65 @@ function hexToRgbNormalized(hex) {
             return [color.r / 255, color.g / 255, color.b / 255];
         }
 
+//---GLOBAL STATE VARIABLES----
+let highlightedGroup = [];
+let currentSearchTerm = "";
+
+//--- TUTORIAL / HELP LOGIC ---
+const tutorialModal = document.getElementById("tutorial-modal");
+const tutorialContent = document.getElementById("tutorial-content");
+const tutorialNext = document.getElementById("tutorial-next");
+const questionButton = document.getElementById("question-button");
+const tutorialClose = document.getElementById("tutorial-close");
+
+const tutorialSlides = [
+    "<h3>Welcome to the Co-Authorship Network</h3><p>This map visualizes connections and collaborations between UVA researchers.</p>",
+    "<h3>Interacting with Nodes</h3><p><strong>Hover</strong> over a node to view the author's details.<br><br><strong>Click</strong> to zoom into a specific author, and <strong>Double-click</strong> anywhere to zoom back out.</p>",
+    "<h3>Search & Filter</h3><p>Use the <strong>Search Bar</strong> (top right) to find specific authors, or click a field in the <strong>Legend</strong> (bottom left) to isolate specific research domains.</p>"
+];
+
+// Only run the tutorial logic if the modal actually exists on this HTML page
+if (tutorialModal) {
+    let currentSlide = 0;
+
+    function renderSlide(index) {
+        currentSlide = index;
+        if (tutorialContent) tutorialContent.innerHTML = tutorialSlides[currentSlide];
+        
+        if (tutorialNext) {
+            if (currentSlide === tutorialSlides.length - 1) {
+                tutorialNext.innerText = "Show Network";
+            } else {
+                tutorialNext.innerText = "Next";
+            }
+        }
+    }
+
+    if (tutorialClose) {
+        tutorialClose.addEventListener("click", () => {
+            tutorialModal.classList.add("hidden");
+        });
+    }
+
+    if (tutorialNext) {
+        tutorialNext.addEventListener("click", () => {
+            if (currentSlide < tutorialSlides.length - 1) {
+                renderSlide(currentSlide + 1);
+            } else {
+                tutorialModal.classList.add("hidden");
+            }
+        });
+    }
+
+    if (questionButton) {
+        questionButton.addEventListener("click", () => {
+            renderSlide(0); 
+            tutorialModal.classList.remove("hidden"); 
+        });
+    }
+
+    renderSlide(0);
+}
 //----CREATING VIZ----
 
 const fieldToGroupMap = {
@@ -147,13 +206,55 @@ parsed.edges.forEach(edge => {
 
 const colorProperty = "0"; 
 
-const helios = new Helios({
-	elementID: 'netviz', 
-	nodes: parsed.nodes, 	
-	tracking: true,	
-	edges: parsed.edges, 
-	colorProperty: colorProperty,
-	use2D: false });
+// ----INITIALIZE-----
+const network = await HeliosNetwork.create({ directed: false });
+
+const parsedNodes = Object.values(parsed.nodes); 
+const internalNodes = network.addNodes(parsedNodes.length);
+
+const idMap = new Map();
+const labels = [];
+const fields = [];
+const groups = [];
+
+parsedNodes.forEach((node, index) => {
+    const internalId = internalNodes[index];
+    idMap.set(node.id, internalId); 
+    
+    // Store attributes into arrays to feed into the network
+    labels.push(node.Label || node.label || "");
+    fields.push(node[colorProperty]);
+    groups.push(getGroupForField(node[colorProperty]));
+});
+
+// 4. Register node attributes into the network
+network.nodeAttribute("label", labels);
+network.nodeAttribute("field", fields);
+network.nodeAttribute("group", groups);
+
+// 5. Build the edges using the mapped internal IDs
+const edgePairs = [];
+parsed.edges.forEach(edge => {
+    const source = idMap.get(edge.source);
+    const target = idMap.get(edge.target);
+    if (source !== undefined && target !== undefined) {
+        edgePairs.push([source, target]);
+    }
+});
+network.addEdges(edgePairs);
+
+const helios = new Helios(network, {
+    container: document.getElementById('netviz'), 
+	tracking: false,
+});
+
+await helios.ready;
+
+helios.nodeSizeScale(0.5); 
+helios.behavior.labels.labels({ enabled: false, source: "label" });
+if (helios.behavior && helios.behavior.legends) {
+    helios.behavior.legends.legends({ enabled: false }); 
+}
 
 //----ADDING NEW FEATURES----
 /*
@@ -164,18 +265,20 @@ Features to add:
 - ego network (search person, see who they are connected to)
 */
 
+// Add Object.values() to extract the nodes from the dictionary
 const colorDomains = [...new Set(
-        parsed.nodes.map(node => getGroupForField(node[colorProperty]))
-    )].filter(Boolean);
+    Object.values(parsed.nodes).map(node => getGroupForField(node[colorProperty]))
+)].filter(Boolean);
+
 colorDomains.sort(); 
-console.log(colorDomains);
+console.log("My calculated domains:", colorDomains);
 
 const customColors = [
     "#900c3f", // deep burgundy
     "#a1339bff", // crimson
     "#ff5733", // vibrant orange
     "#d87040", // terracotta
-	"#ffc300", // golden yellow
+    "#ffc300", // golden yellow
     "#4b4f8cff", // warm brown
     "#d45087", // warm rose
     "#f194b4"  // soft pink
@@ -183,15 +286,11 @@ const customColors = [
 
 const colorScale = scaleOrdinal(customColors).domain(colorDomains);
 
-helios.nodeColor(node => {
-        const group = getGroupForField(node[colorProperty]);
-        return hexToRgbNormalized(colorScale(group));
-    });
+updateNetworkColors();
 
 //----LEGEND----- 
 const legendContainer = d3Select("#legend-items"); 
 
-let highlightedGroup = [];
 
 colorDomains.forEach(domainValue => {
 	const legendItem = legendContainer.append("div")
@@ -219,9 +318,7 @@ colorDomains.forEach(domainValue => {
         
         updateNetworkColors();
         
-
-        helios.update();
-    });
+   	 	});
 		
     });
 
@@ -240,142 +337,112 @@ function updateInfoBox(label, field) {
 }
 
 //---NODE INTERACTIONS---
-helios.onNodeHoverStart((node, event) => {
-	if (!node) return;
 
-	const group = getGroupForField(node[colorProperty]);
-    const label = (node.Label || "").toLowerCase();
+// HOVER LOGIC
+if (helios.behavior && helios.behavior.hover) {
+    helios.behavior.hover.onHover((event) => {
+        if (event && event.node !== undefined) {
+            const nodeIndex = event.node;
+            const label = labels[nodeIndex];
+            const field = fields[nodeIndex];
+            
+            updateInfoBox(label, field);
+            d3Select("#netviz").style("cursor", "pointer");
+        } else {
+            updateInfoBox(null);
+            d3Select("#netviz").style("cursor", "default");
+        }
+    });
+}
 
-    const isLegendMatch = highlightedGroup.length === 0 || highlightedGroup.includes(group);
-    const isSearchMatch = currentSearchTerm === "" || label.includes(currentSearchTerm);
-
-	if (isLegendMatch && isSearchMatch) {
-		if (node._originalSize === undefined) {
-			node._originalSize = node.size;
-		}
-		node.size = node._originalSize * 1.5;
-		helios.update(); 
-		const label = node.Label;
-		d3Select("#netviz").style("cursor", "pointer");
-		const field = node[colorProperty];
-        updateInfoBox(label, field);
-	}
-});
-
-helios.onNodeHoverEnd((node, event) => {
-	if (node) {
-		// Return node to its original size
-		node.size = node._originalSize || 1;
-		d3Select("#netviz").style("cursor", "default");
-		helios.update(); 
-		updateInfoBox(null);
-	}
-});
-
+// CLICK / DOUBLE-CLICK LOGIC
+if (helios.behavior && helios.behavior.selection) {
+    helios.behavior.selection.onClick((event) => {
+        if (event && event.node !== undefined) {
+            const nodeIndex = event.node;
+            console.log(`Clicked node index: ${nodeIndex}`);
+            
+            if (helios.centerOnNodes) {
+                helios.centerOnNodes([nodeIndex], 500);
+            } else if (helios.camera && helios.camera.centerOnNodes) {
+                helios.camera.centerOnNodes([nodeIndex], 500);
+            }
+        } else {
+            console.log(`Clicked on background`);
+            if (helios.centerOnNodes) {
+                helios.centerOnNodes([], 500);
+            } else if (helios.camera && helios.camera.centerOnNodes) {
+                helios.camera.centerOnNodes([], 500);
+            }
+        }
+    });
+}
 
 helios.backgroundColor([1.0,1.0,1.0,1.0]);
 helios.nodesGlobalSizeScale(0.5);
 
 
-helios.onNodeDoubleClick((node) => {
-		if (node) {
-			console.log(`Double Clicked: ${node.ID}`);
-			helios.centerOnNodes([node],500);
-		} else {
-			console.log(`Double clicked on background`);
-			helios.centerOnNodes([],500); 
-
-		}
-	}); 
-
-helios.onNodeClick((node) => {
-	if (!node) {
-		return;
-	}
-	const group = getGroupForField(node[colorProperty]);
-    const label = (node.Label || "").toLowerCase();
-
-    const isLegendMatch = highlightedGroup.length === 0 || highlightedGroup.includes(group);
-    const isSearchMatch = currentSearchTerm === "" || label.includes(currentSearchTerm);
-
-		if (isLegendMatch && isSearchMatch) {
-			helios.centerOnNodes([node],500);
-			console.log(`Clicked: ${node.ID}`);
-		} else {
-			console.log(`Clicked on background`);
-		}
-	});
-
-//--- TUTORIAL / HELP LOGIC ---
-const tutorialModal = document.getElementById("tutorial-modal");
-const tutorialContent = document.getElementById("tutorial-content");
-const tutorialNext = document.getElementById("tutorial-next");
-const questionButton = document.getElementById("question-button");
-const tutorialClose = document.getElementById("tutorial-close");
-
-const tutorialSlides = [
-    "<h3>Welcome to the Co-Authorship Network</h3><p>This map visualizes connections and collaborations between UVA researchers.</p>",
-    "<h3>Interacting with Nodes</h3><p><strong>Hover</strong> over a node to view the author's details.<br><br><strong>Click</strong> to zoom into a specific author, and <strong>Double-click</strong> anywhere to zoom back out.</p>",
-    "<h3>Search & Filter</h3><p>Use the <strong>Search Bar</strong> (top right) to find specific authors, or click a field in the <strong>Legend</strong> (bottom left) to isolate specific research domains.</p>"
-];
-
-let currentSlide = 0;
-
-function renderSlide(index) {
-    currentSlide = index;
-    tutorialContent.innerHTML = tutorialSlides[currentSlide];
-    
-    if (currentSlide === tutorialSlides.length - 1) {
-        tutorialNext.innerText = "Show Network";
-    } else {
-        tutorialNext.innerText = "Next";
-    }
-}
-
-tutorialClose.addEventListener("click", () => {
-	tutorialModal.classList.add("hidden");
-});
-
-tutorialNext.addEventListener("click", () => {
-    if (currentSlide < tutorialSlides.length - 1) {
-        renderSlide(currentSlide + 1);
-    } else {
-        tutorialModal.classList.add("hidden");
-    }
-});
-
-questionButton.addEventListener("click", () => {
-    renderSlide(0); 
-    tutorialModal.classList.remove("hidden"); 
-});
-
-renderSlide(0);
-
 //---SEARCH BAR LOGIC---
 const searchInput = document.getElementById("author-search");
-let currentSearchTerm = "";
 const clearBtn = document.getElementById("clear-search");
 
+// Only add search listeners if the search bar exists on this HTML page
+if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+        currentSearchTerm = e.target.value.toLowerCase();
+        console.log(`Current search term: "${currentSearchTerm}"`);
+        if (clearBtn) {
+            if (currentSearchTerm.length > 0) {
+                clearBtn.style.display = "block";
+            } else {
+                clearBtn.style.display = "none";
+            }
+        }
+        updateNetworkColors();
+    });
+}
+
+if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+        if (searchInput) searchInput.value = ""; 
+        currentSearchTerm = ""; 
+        clearBtn.style.display = "none"; 
+        updateNetworkColors(); 
+    });
+}
+
 function updateNetworkColors() {
-    helios.nodeColor(node => {
-        const group = getGroupForField(node[colorProperty]);
+    const nodeCount = groups.length; 
+    const colorArray = []; 
+    const opacityArray = []; // <-- We will manage transparency separately now
+
+    for (let i = 0; i < nodeCount; i++) {
+        const group = (groups[i] || "").trim(); 
+        const label = (labels[i] || "").toLowerCase();
         const rgb = hexToRgbNormalized(colorScale(group));
-        
-        const label = (node.Label || "").toLowerCase();
 
         let isLegendMatch = highlightedGroup.length === 0 || highlightedGroup.includes(group);
-        
         let isSearchMatch = currentSearchTerm === "" || label.includes(currentSearchTerm);
 
         if (isLegendMatch && isSearchMatch) {
-            return [rgb[0], rgb[1], rgb[2], 1.0]; 
-        } else {  
-            return [0.9, 0.9, 0.9, 0.1]; 
+            // Visible match: Push exactly 3 elements [R, G, B]
+            colorArray.push([rgb[0], rgb[1], rgb[2]]);
+            opacityArray.push(1.0); // Fully opaque
+        } else {
+            // Dimmed/Filtered out: Push light grey
+            colorArray.push([0.9, 0.9, 0.9]);
+            opacityArray.push(0.1); // Mostly transparent
         }
-    });
+    }
+
+    // Assign the RGB colors (3 dimensions)
+    network.nodeAttribute("color", colorArray);
     
-    helios.update();
+    network.nodeAttribute("opacity", opacityArray);
 }
+
+// Call this once right after initializing Helios to apply the initial colors
+updateNetworkColors();
 
 searchInput.addEventListener("input", (e) => {
     currentSearchTerm = e.target.value.toLowerCase();
