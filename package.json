@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "d3fc": "^15.2.13"
+    "d3fc": "^15.2.13",
+    "helios-network": "^0.10.4"
   }
 }

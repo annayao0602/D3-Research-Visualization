@@ -1,6 +1,7 @@
 
 import { gmlData } from "../data/uva_data.js";
-import { Helios } from "https://esm.sh/helios-web";
+import HeliosNetwork from "https://heliosweb.io/docs/assets/vendor/helios/helios-network.js";
+import { Helios } from "https://heliosweb.io/docs/assets/vendor/helios/helios-web.es.js";
 import { scaleOrdinal } from "https://esm.sh/d3-scale";
 import { select as d3Select } from "https://esm.sh/d3-selection";
 import { schemeCategory10, schemePaired, schemeTableau10 } from "https://esm.sh/d3-scale-chromatic";
