@@ -1,7 +1,7 @@
 
 import { gmlData } from "../data/uva_data.js";
-import HeliosNetwork from "https://heliosweb.io/docs/assets/vendor/helios/helios-network.js";
-import { Helios } from "https://heliosweb.io/docs/assets/vendor/helios/helios-web.es.js";
+import HeliosNetwork from "helios-network";
+import { Helios } from "helios-web";
 import { scaleOrdinal } from "https://esm.sh/d3-scale";
 import { select as d3Select } from "https://esm.sh/d3-selection";
 import { schemeCategory10, schemePaired, schemeTableau10 } from "https://esm.sh/d3-scale-chromatic";
@@ -250,6 +250,26 @@ const helios = new Helios(network, {
 
 await helios.ready;
 
+
+/*
+if (helios.behavior && helios.behavior.mappers) {
+    try {
+        // Safely tell the mapper to use your raw RGBA array instead of the default theme
+        helios.behavior.mappers.mappers({
+            node: {
+                color: { 
+                    source: "color", 
+                    type: "passthrough" 
+                }
+            }
+        });
+    } catch (error) {
+        console.warn("Mapper configuration skipped:", error);
+    }
+}
+    */
+
+
 helios.nodeSizeScale(0.5); 
 helios.behavior.labels.labels({ enabled: false, source: "label" });
 if (helios.behavior && helios.behavior.legends) {
@@ -336,49 +356,42 @@ function updateInfoBox(label, field) {
     }
 }
 
-//---NODE INTERACTIONS---
+// --- NODE INTERACTIONS ---
 
-// HOVER LOGIC
-if (helios.behavior && helios.behavior.hover) {
-    helios.behavior.hover.onHover((event) => {
-        if (event && event.node !== undefined) {
-            const nodeIndex = event.node;
-            const label = labels[nodeIndex];
-            const field = fields[nodeIndex];
-            
-            updateInfoBox(label, field);
-            d3Select("#netviz").style("cursor", "pointer");
-        } else {
-            updateInfoBox(null);
-            d3Select("#netviz").style("cursor", "default");
-        }
-    });
-}
+// --- 2. HOVER LOGIC (Tooltips) ---
 
-// CLICK / DOUBLE-CLICK LOGIC
+helios.on(EVENTS.NODE_HOVER, (event) => {
+    if (event && event.node !== undefined) {
+        const nodeIndex = event.node;
+        const label = labels[nodeIndex];
+        const field = fields[nodeIndex];
+        
+        updateInfoBox(label, field);
+        d3Select("#netviz").style("cursor", "pointer");
+    } else {
+        updateInfoBox(null);
+        d3Select("#netviz").style("cursor", "default");
+    }
+});
+/*
+
+// --- 3. CLICK LOGIC (Zooming) ---
 if (helios.behavior && helios.behavior.selection) {
     helios.behavior.selection.onClick((event) => {
         if (event && event.node !== undefined) {
-            const nodeIndex = event.node;
-            console.log(`Clicked node index: ${nodeIndex}`);
-            
-            if (helios.centerOnNodes) {
-                helios.centerOnNodes([nodeIndex], 500);
-            } else if (helios.camera && helios.camera.centerOnNodes) {
-                helios.camera.centerOnNodes([nodeIndex], 500);
+            if (helios.camera && helios.camera.centerOnNodes) {
+                helios.camera.centerOnNodes([event.node], 500);
             }
         } else {
-            console.log(`Clicked on background`);
-            if (helios.centerOnNodes) {
-                helios.centerOnNodes([], 500);
-            } else if (helios.camera && helios.camera.centerOnNodes) {
+            if (helios.camera && helios.camera.centerOnNodes) {
                 helios.camera.centerOnNodes([], 500);
             }
         }
     });
 }
+*/
 
-helios.backgroundColor([1.0,1.0,1.0,1.0]);
+// helios.backgroundColor([1.0,1.0,1.0,1.0]);
 helios.nodesGlobalSizeScale(0.5);
 
 
