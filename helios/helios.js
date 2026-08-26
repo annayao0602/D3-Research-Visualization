@@ -250,24 +250,7 @@ const helios = new Helios(network, {
 
 await helios.ready;
 
-
-/*
-if (helios.behavior && helios.behavior.mappers) {
-    try {
-        // Safely tell the mapper to use your raw RGBA array instead of the default theme
-        helios.behavior.mappers.mappers({
-            node: {
-                color: { 
-                    source: "color", 
-                    type: "passthrough" 
-                }
-            }
-        });
-    } catch (error) {
-        console.warn("Mapper configuration skipped:", error);
-    }
-}
-    */
+window.helios = helios;
 
 
 helios.nodeSizeScale(0.5); 
@@ -286,64 +269,74 @@ Features to add:
 */
 
 //----LEGEND & COLORS----- 
+setTimeout(() => {
+    // 1. Get unique categories
+    const colorDomains = [...new Set(
+        Object.values(parsed.nodes).map(node => getGroupForField(node[colorProperty]))
+    )].filter(Boolean);
+    colorDomains.sort(); 
 
-// 1. Extract your unique domains
-const colorDomains = [...new Set(
-    Object.values(parsed.nodes).map(node => getGroupForField(node[colorProperty]))
-)].filter(Boolean);
+    // 2. Create unified color scale for network and legend
+    const colorScale = scaleOrdinal()
+        .domain(colorDomains)
+        .range(schemeCategory10.concat(schemePaired).concat(schemeTableau10));
 
-colorDomains.sort(); 
-console.log("My calculated domains:", colorDomains);
-
-const customColors = [
-    "#900c3f", "#a1339bff", "#ff5733", "#d87040", 
-    "#ffc300", "#4b4f8cff", "#d45087", "#f194b4"
-];
-
-// 2. Define the scale using your imported scaleOrdinal
-const colorScale = scaleOrdinal(customColors)
-    .domain(colorDomains)
-    .unknown("#00ff00");
-
-// Check the "Master Key"
-const mappingDebugger = colorDomains.map(domain => ({
-    Category: domain,
-    ExpectedHex: colorScale(domain),
-    ExpectedRGB: hexToRgbNormalized(colorScale(domain)).map(n => n.toFixed(2)).join(", ")
-}));
-console.table(mappingDebugger);
-// 3. Build the interactive legend
-const legendContainer = d3Select("#legend-items"); // Use your imported d3Select
-
-colorDomains.forEach(domainValue => {
-    const legendItem = legendContainer.append("div")
-        .attr("class", "legend-item")
-        .style("cursor", "pointer"); 
-
-    legendItem.append("div")
-        .attr("class", "legend-color-box")
-        .style("background-color", colorScale(domainValue)); 
-    
-    legendItem.append("span").text(domainValue);
-    legendItem.on("click", () => {
-        if (highlightedGroup.includes(domainValue)) {
-            highlightedGroup = highlightedGroup.filter(g => g !== domainValue);
-        } else {
-            highlightedGroup.push(domainValue);
-        }
-        console.log(`Highlighted groups: ${highlightedGroup.join(", ")}`);
-        
-        legendContainer.selectAll(".legend-item")
-            .style("opacity", function() {
-                const text = d3Select(this).select("span").text();
-                if (highlightedGroup.length === 0) return 1.0;
-                return highlightedGroup.includes(text) ? 1.0 : 0.2;
-            });
-        
-        updateNetworkColors();
+    // 3. Build parallel arrays for Helios
+    const heliosRange = colorDomains.map(domainValue => {
+        const hex = d3Color(colorScale(domainValue)).formatHex();
+        return hex + "ff"; 
     });
-});
 
+    // 4. Apply configuration to Helios
+    if (helios.behavior && helios.behavior.mappers) {
+        helios.behavior.mappers.setChannelConfig('node', 'color', {
+            serializable: true,
+            type: "categorical",
+            attributes: "group",
+            domain: colorDomains,
+            range: heliosRange,
+            defaultValue: "#888888ff",
+            meta: {
+                categorical: {
+                    sortOrder: "frequency",
+                    preferScheme: true
+                }
+            }
+        });
+    }
+
+    // 5. Build the Legend 
+    const legendContainer = d3Select("#legend-items"); 
+
+    colorDomains.forEach(domainValue => {
+        const legendItem = legendContainer.append("div")
+            .attr("class", "legend-item")
+            .style("cursor", "pointer"); 
+
+        legendItem.append("div")
+            .attr("class", "legend-color-box")
+            .style("background-color", colorScale(domainValue));
+            
+        legendItem.append("span").text(domainValue);
+        
+        legendItem.on("click", () => {
+            if (highlightedGroup.includes(domainValue)) {
+                highlightedGroup = highlightedGroup.filter(g => g !== domainValue);
+            } else {
+                highlightedGroup.push(domainValue);
+            }
+            
+            legendContainer.selectAll(".legend-item")
+                .style("opacity", function() {
+                    const text = d3Select(this).select("span").text();
+                    if (highlightedGroup.length === 0) return 1.0;
+                    return highlightedGroup.includes(text) ? 1.0 : 0.2;
+                });
+        });
+    });
+    
+    console.log("Colors successfully applied via timeout bridge!");
+}, 200);
 //---HOVER INFO BOX---
 const infoBox = d3Select("#info-box");
 function updateInfoBox(label, field) {
@@ -385,7 +378,6 @@ if (searchInput) {
         if (clearBtn) {
             clearBtn.style.display = currentSearchTerm.length > 0 ? "block" : "none";
         }
-        updateNetworkColors();
     });
 }
 
@@ -394,66 +386,9 @@ if (clearBtn) {
         if (searchInput) searchInput.value = ""; 
         currentSearchTerm = ""; 
         clearBtn.style.display = "none"; 
-        updateNetworkColors(); 
     });
 }
 
-//--- CUSTOM RENDER LOOP ---
-// This function handles all color and opacity changes manually
-//--- CUSTOM RENDER LOOP ---
-function updateNetworkColors() {
-    const nodeCount = groups.length; 
-    console.log("updateNetworkColors started! groups.length is:", groups.length);
-    
-    // Helios WebGL shaders expect RGBA (4 values per node)
-    const colorArray = new Float32Array(nodeCount * 4); 
 
-    for (let i = 0; i < nodeCount; i++) {
-        const group = (groups[i] || "").trim(); 
-        const label = (labels[i] || "").toLowerCase();
-        
-        const hexColor = colorScale(group);
-        const rgb = hexToRgbNormalized(hexColor);
-
-        if (i < 5) {
-            console.log(`Node ${i} [${labels[i]}]:`, {
-                rawGroup: groups[i],
-                trimmedGroup: group,
-                assignedHex: hexColor,
-                assignedRGB: rgb
-            });
-        }
-
-        let isLegendMatch = highlightedGroup.length === 0 || highlightedGroup.includes(group);
-        let isSearchMatch = currentSearchTerm === "" || label.includes(currentSearchTerm);
-
-        if (isLegendMatch && isSearchMatch) {
-            // Match: Apply mapped color and full opacity (Alpha = 1.0)
-            colorArray[i * 4]     = rgb[0]; // R
-            colorArray[i * 4 + 1] = rgb[1]; // G
-            colorArray[i * 4 + 2] = rgb[2]; // B
-            colorArray[i * 4 + 3] = 1.0;    // Alpha (Opacity)
-        } else {
-            // Filtered out: Apply light grey and low opacity (Alpha = 0.15)
-            colorArray[i * 4]     = 0.85; 
-            colorArray[i * 4 + 1] = 0.85; 
-            colorArray[i * 4 + 2] = 0.85; 
-            colorArray[i * 4 + 3] = 0.15; // Alpha
-        }
-    }
-
-    // Apply the flat RGBA array to the network
-    network.nodeAttribute("color", colorArray);
-}
-
-if (helios.behavior && helios.behavior.mappers) {
-    helios.behavior.mappers.setChannelConfig('node', 'color', {
-        type: 'passthrough',
-        attribute: 'color' 
-    });
-}
-
-// Call once to apply initial colors
-updateNetworkColors();
 
 

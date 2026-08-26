@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple Helios Network</title>
     <style>
-        /* Make the container fill the entire screen */
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #1a1a1a; /* Dark background to make nodes pop */
+            background-color: #1a1a1a; 
         }
         #netviz {
             width: 100%;
@@ -25,14 +24,11 @@
                 "helios-network": "https://cdn.jsdelivr.net/npm/helios-network/+esm"
             }
         }
-</script>
+    </script>
 </head>
 <body>
-
-    <!-- Container for the network -->
     <div id="netviz"></div>
 
-    <!-- Script must be type="module" to use ES6 imports -->
     <script type="module">
         import HeliosNetwork from "helios-network";
         import { Helios } from "helios-web";
@@ -41,23 +37,37 @@
 
         const nodes = network.addNodes(6);
         network.addEdges([
-        [nodes[0], nodes[1]],
-        [nodes[1], nodes[2]],
-        [nodes[2], nodes[3]],
-        [nodes[3], nodes[4]],
-        [nodes[4], nodes[5]],
-        [nodes[5], nodes[0]],
-        [nodes[0], nodes[3]],
+            [nodes[0], nodes[1]],
+            [nodes[1], nodes[2]],
+            [nodes[2], nodes[3]],
+            [nodes[3], nodes[4]],
+            [nodes[4], nodes[5]],
+            [nodes[5], nodes[0]],
+            [nodes[0], nodes[3]],
         ]);
 
+        // 1. Create a numeric attribute named "score" (values between 0 and 1)
+        network.nodeAttribute("score", [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]);
 
         const helios = new Helios(network, {
-        container: document.getElementById('netviz'),
-        mode: '2d',
+            container: document.getElementById('netviz'),
+            mode: '2d',
         });
 
-    
         await helios.ready;
+
+        // 2. Use the EXACT code from the documentation
+        if (helios.behavior && helios.behavior.mappers) {
+            helios.behavior.mappers.setChannelConfig('node', 'color', {
+                type: 'colormap',
+                attributes: 'score', // Plural 'attributes' as per the docs!
+                colormap: 'interpolateViridis',
+                domain: [0, 1],
+            });
+        }
+
+        helios.nodeSizeScale(2.0);
+
         await new Promise((resolve) => setTimeout(resolve, 900));
         helios.frameNetwork({ animate: false });
     </script>
