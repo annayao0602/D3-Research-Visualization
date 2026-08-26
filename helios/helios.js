@@ -270,24 +270,20 @@ Features to add:
 
 //----LEGEND & COLORS----- 
 setTimeout(() => {
-    // 1. Get unique categories
     const colorDomains = [...new Set(
         Object.values(parsed.nodes).map(node => getGroupForField(node[colorProperty]))
     )].filter(Boolean);
     colorDomains.sort(); 
 
-    // 2. Create unified color scale for network and legend
     const colorScale = scaleOrdinal()
         .domain(colorDomains)
         .range(schemeCategory10.concat(schemePaired).concat(schemeTableau10));
 
-    // 3. Build parallel arrays for Helios
     const heliosRange = colorDomains.map(domainValue => {
         const hex = d3Color(colorScale(domainValue)).formatHex();
         return hex + "ff"; 
     });
 
-    // 4. Apply configuration to Helios
     if (helios.behavior && helios.behavior.mappers) {
         helios.behavior.mappers.setChannelConfig('node', 'color', {
             serializable: true,
@@ -352,7 +348,6 @@ function updateInfoBox(label, field) {
 
 // --- NODE INTERACTIONS ---
 
-// Using the correct helios event syntax (assuming EVENTS is defined, if not, use string "nodeHover")
 helios.on("nodeHover", (event) => {
     if (event && event.node !== undefined) {
         const nodeIndex = event.node;
