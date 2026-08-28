@@ -262,12 +262,57 @@ const helios = new Helios(network, {
 
 await helios.ready;
 
+const colorsByGroup = new Map([
+  ["Biochemistry, genetics, and molecular biology", "#900c3fff"],
+  ["Engineering", "#a1339bff"],
+  ["Humanities", "#ff5733ff"],
+  ["Life Sciences", "#d87040ff"],
+  ["Medicine", "#ffc300ff"],
+  ["Physical Sciences", "#4b4f8cff"],
+  ["Social Sciences", "#d45087ff"],
+  ["Other", "#f194b4ff"]
+]);
+
+
 helios.behavior.mappers.setChannelConfig("node", "color", {
   type: "categorical",
   attributes: "group",
   domain: categories.map(({ id }) => id),
-  range: colormapToScheme("category18", categories.length),
+  range: categories.map(
+    ({ label }) => colorsByGroup.get(label) ?? "#888888ff"
+  ),
 });
+
+function updateNetworkVisuals() {
+    const dynamicRange = categories.map(({ label }) => {
+        const baseColor = colorsByGroup.get(label) ?? "#888888ff";
+        
+        if (highlightedGroup.length === 0) {
+            return baseColor; 
+        }
+        
+        if (highlightedGroup.includes(label)) {
+            return baseColor;
+        } else {
+            return baseColor.substring(0, 7) + "1a"; 
+        }
+    });
+
+    // Push the updated color array back to Helios
+    helios.behavior.mappers.setChannelConfig("node", "color", {
+        type: "categorical",
+        attributes: "group",
+        domain: categories.map(({ id }) => id),
+        range: dynamicRange,
+    });
+}
+
+function isNodeActive(nodeIndex) {
+    if (highlightedGroup.length === 0) return true; 
+    
+    const nodeGroup = groups[nodeIndex];
+    return highlightedGroup.includes(nodeGroup);
+}
 
 helios.nodeSizeScale(0.5); 
 helios.behavior.labels.labels({ enabled: false, source: "label" });
@@ -275,6 +320,56 @@ if (helios.behavior && helios.behavior.legends) {
     helios.behavior.legends.legends({ enabled: false }); 
 }
 
+// ---LEGEND----
+const colorDomains = [...new Set(
+    Object.values(parsed.nodes).map(node => getGroupForField(node[colorProperty]))
+)].filter(Boolean);
+
+colorDomains.sort();
+
+const customColors = [
+    "#900c3f",   // deep burgundy
+    "#a1339bff", // crimson
+    "#ff5733",   // vibrant orange
+    "#d87040",   // terracotta
+    "#ffc300",   // golden yellow
+    "#4b4f8cff", // warm brown
+    "#d45087",   // warm rose
+    "#f194b4"    // soft pink
+];
+
+const colorScale = scaleOrdinal(customColors)
+    .domain(colorDomains)
+    .unknown("#cccccc"); 
+
+const legendContainer = d3Select("#legend-items"); 
+
+colorDomains.forEach(domainValue => {
+	const legendItem = legendContainer.append("div")
+        .attr("class", "legend-item")
+        .style("cursor", "pointer"); 
+
+    legendItem.append("div")
+        .attr("class", "legend-color-box")
+        .style("background-color", colorScale(domainValue));
+
+    legendItem.append("span").text(domainValue);
+	legendItem.on("click", () => {
+		if (highlightedGroup.includes(domainValue)) {
+			highlightedGroup = highlightedGroup.filter(g => g !== domainValue);
+		} else {
+			highlightedGroup.push(domainValue);
+		}
+		console.log(`Highlighted groups: ${highlightedGroup.join(", ")}`);
+		legendContainer.selectAll(".legend-item")
+            .style("opacity", function() {
+                const text = d3Select(this).select("span").text();
+                if (highlightedGroup.length === 0) return 1.0;
+                return highlightedGroup.includes(text) ? 1.0 : 0.2;
+            });
+        updateNetworkVisuals();
+        });
+    });
 //----ADDING NEW FEATURES----
 /*
 Features to add:
@@ -284,72 +379,6 @@ Features to add:
 - ego network (search person, see who they are connected to)
 */
 
-//----LEGEND & COLORS----- 
-/*
-setTimeout(() => {
-    const colorDomains = [...new Set(
-        Object.values(parsed.nodes).map(node => getGroupForField(node[colorProperty]))
-    )].filter(Boolean);
-    colorDomains.sort(); 
-
-    const colorScale = scaleOrdinal()
-        .domain(colorDomains)
-        .range(schemeCategory10.concat(schemePaired).concat(schemeTableau10));
-
-    const heliosRange = colorDomains.map(domainValue => {
-        const hex = d3Color(colorScale(domainValue)).formatHex();
-        return hex + "ff"; 
-    });
-
-    if (helios.behavior && helios.behavior.mappers) {
-        helios.behavior.mappers.setChannelConfig('node', 'color', {
-            serializable: true,
-            type: "categorical",
-            attributes: "group",
-            domain: colorDomains,
-            range: heliosRange,
-            defaultValue: "#888888ff",
-            meta: {
-                categorical: {
-                    sortOrder: "frequency",
-                    preferScheme: true
-                }
-            }
-        });
-    } */
-
-    // 5. Build the Legend 
-    const legendContainer = d3Select("#legend-items"); 
-
-    colorDomains.forEach(domainValue => {
-        const legendItem = legendContainer.append("div")
-            .attr("class", "legend-item")
-            .style("cursor", "pointer"); 
-
-        legendItem.append("div")
-            .attr("class", "legend-color-box")
-            .style("background-color", colorScale(domainValue));
-            
-        legendItem.append("span").text(domainValue);
-        
-        legendItem.on("click", () => {
-            if (highlightedGroup.includes(domainValue)) {
-                highlightedGroup = highlightedGroup.filter(g => g !== domainValue);
-            } else {
-                highlightedGroup.push(domainValue);
-            }
-            
-            legendContainer.selectAll(".legend-item")
-                .style("opacity", function() {
-                    const text = d3Select(this).select("span").text();
-                    if (highlightedGroup.length === 0) return 1.0;
-                    return highlightedGroup.includes(text) ? 1.0 : 0.2;
-                });
-        });
-    });
-    
-    console.log("Colors successfully applied via timeout bridge!");
-}, 200);
 //---HOVER INFO BOX---
 const infoBox = d3Select("#info-box");
 function updateInfoBox(label, field) {
@@ -365,8 +394,9 @@ function updateInfoBox(label, field) {
 
 // --- NODE INTERACTIONS ---
 
+// TODO: after checking that the node is active, info box should appear and update with labels and fields.
 helios.on("nodeHover", (event) => {
-    if (event && event.node !== undefined) {
+    if (event && event.node !== undefined && isNodeActive(event.node)) {
         const nodeIndex = event.node;
         const label = labels[nodeIndex];
         const field = fields[nodeIndex];
@@ -378,6 +408,9 @@ helios.on("nodeHover", (event) => {
         d3Select("#netviz").style("cursor", "default");
     }
 });
+
+//TODO: only active nodes should be clickable for zooming in/ centering on
+//helios.on("nodeClick", (event) => {...
 
 helios.nodeSizeScale(0.5);
 //---SEARCH BAR LOGIC---
