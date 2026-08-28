@@ -1,7 +1,10 @@
 
 import { gmlData } from "../data/uva_data.js";
 import HeliosNetwork from "helios-network";
-import { Helios } from "helios-web";
+import {
+  Helios,
+  colormapToScheme,
+} from "helios-web";
 import { scaleOrdinal } from "https://esm.sh/d3-scale";
 import { select as d3Select } from "https://esm.sh/d3-selection";
 import { schemeCategory10, schemePaired, schemeTableau10 } from "https://esm.sh/d3-scale-chromatic";
@@ -221,18 +224,24 @@ parsedNodes.forEach((node, index) => {
     const internalId = internalNodes[index];
     idMap.set(node.id, internalId); 
     
-    // Store attributes into arrays to feed into the network
     labels.push(node.Label || node.label || "");
     fields.push(node[colorProperty]);
     groups.push(getGroupForField(node[colorProperty]));
 });
 
-// 4. Register node attributes into the network
 network.nodeAttribute("label", labels);
 network.nodeAttribute("field", fields);
 network.nodeAttribute("group", groups);
 
-// 5. Build the edges using the mapped internal IDs
+// Categorize the "group" attribute to string
+network.nodeAttribute("group", groups, { type: "string" });
+
+network.categorizeNodeAttribute("group");
+
+const categories =
+  network.getNodeAttributeCategoryDictionary("group").entries;
+
+
 const edgePairs = [];
 parsed.edges.forEach(edge => {
     const source = idMap.get(edge.source);
@@ -243,15 +252,22 @@ parsed.edges.forEach(edge => {
 });
 network.addEdges(edgePairs);
 
+// --- INITIALIZE HELIOS ---
 const helios = new Helios(network, {
-    container: document.getElementById('netviz'), 
-	tracking: false,
+  container: document.getElementById("netviz"),
+  ui: false,
+  quickControls: false,
 });
+
 
 await helios.ready;
 
-window.helios = helios;
-
+helios.behavior.mappers.setChannelConfig("node", "color", {
+  type: "categorical",
+  attributes: "group",
+  domain: categories.map(({ id }) => id),
+  range: colormapToScheme("category18", categories.length),
+});
 
 helios.nodeSizeScale(0.5); 
 helios.behavior.labels.labels({ enabled: false, source: "label" });
@@ -269,6 +285,7 @@ Features to add:
 */
 
 //----LEGEND & COLORS----- 
+/*
 setTimeout(() => {
     const colorDomains = [...new Set(
         Object.values(parsed.nodes).map(node => getGroupForField(node[colorProperty]))
@@ -299,7 +316,7 @@ setTimeout(() => {
                 }
             }
         });
-    }
+    } */
 
     // 5. Build the Legend 
     const legendContainer = d3Select("#legend-items"); 
