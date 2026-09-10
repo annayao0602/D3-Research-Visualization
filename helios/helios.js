@@ -3,8 +3,10 @@ import { gmlData } from "../data/uva_data.js";
 import HeliosNetwork from "helios-network";
 import {
   Helios,
+  EVENTS,
   colormapToScheme,
 } from "helios-web";
+
 import { scaleOrdinal } from "https://esm.sh/d3-scale";
 import { select as d3Select } from "https://esm.sh/d3-selection";
 import { schemeCategory10, schemePaired, schemeTableau10 } from "https://esm.sh/d3-scale-chromatic";
@@ -365,7 +367,7 @@ colorDomains.forEach(domainValue => {
             .style("opacity", function() {
                 const text = d3Select(this).select("span").text();
                 if (highlightedGroup.length === 0) return 1.0;
-                return highlightedGroup.includes(text) ? 1.0 : 0.2;
+                return highlightedGroup.includes(text) ? 1.0 : 0.1;
             });
         updateNetworkVisuals();
         });
@@ -393,24 +395,54 @@ function updateInfoBox(label, field) {
 }
 
 // --- NODE INTERACTIONS ---
-
+let pinnedNodeIndex = null;
 // TODO: after checking that the node is active, info box should appear and update with labels and fields.
-helios.on("nodeHover", (event) => {
-    if (event && event.node !== undefined && isNodeActive(event.node)) {
-        const nodeIndex = event.node;
-        const label = labels[nodeIndex];
-        const field = fields[nodeIndex];
-        
-        updateInfoBox(label, field);
-        d3Select("#netviz").style("cursor", "pointer");
-    } else {
-        updateInfoBox(null);
-        d3Select("#netviz").style("cursor", "default");
-    }
+helios.on(EVENTS.NODE_CLICK, ({ detail }) => {
+  if (!isNodeActive(detail.index)) return;
+  
+  // Toggle the pinned node
+  if (pinnedNodeIndex === detail.index) {
+    pinnedNodeIndex = null;
+  } else {
+    pinnedNodeIndex = detail.index;
+    console.log("pinnedNodeIndex:", pinnedNodeIndex);
+  }
+  
+  // Update the info box to the node we just clicked
+  updateInfoBox(labels[detail.index], fields[detail.index]);
+  
+  helios.cameraTargetNodes([detail.index], {
+    animate: true,
+    zoomScale: 1.35,
+  });
 });
 
-//TODO: only active nodes should be clickable for zooming in/ centering on
-//helios.on("nodeClick", (event) => {...
+// 2. HOVER EVENT
+helios.on(EVENTS.NODE_HOVER, ({ detail }) => {
+  if (detail.state === "in" && isNodeActive(detail.index)) {
+    // HOVER IN: Always show the hovered node's info (temporarily overriding the pinned one)
+    updateInfoBox(labels[detail.index], fields[detail.index]);
+    d3Select("#netviz").style("cursor", "pointer");
+  } 
+  else if (detail.state === "out") {
+    // HOVER OUT: 
+    d3Select("#netviz").style("cursor", "default");
+    
+    if (pinnedNodeIndex !== null) {
+      // If we have a pinned node, revert the info box back to it
+      updateInfoBox(labels[pinnedNodeIndex], fields[pinnedNodeIndex]);
+    } else {
+      // Otherwise, clear the info box completely
+      updateInfoBox(null);
+    }
+  }
+});
+
+helios.on(EVENTS.NODE_DBLCLICK, () => {
+  pinnedNodeIndex = null;
+  updateInfoBox(null);
+  console.log("pinnedNodeIndex:", pinnedNodeIndex);
+});
 
 helios.nodeSizeScale(0.5);
 //---SEARCH BAR LOGIC---
