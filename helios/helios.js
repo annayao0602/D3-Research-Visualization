@@ -238,6 +238,8 @@ network.nodeAttribute("group", groups);
 // Categorize the "group" attribute to string
 network.nodeAttribute("group", groups, { type: "string" });
 
+console.log(labels, fields, groups);
+
 network.categorizeNodeAttribute("group");
 
 const categories =
@@ -285,19 +287,46 @@ helios.behavior.mappers.setChannelConfig("node", "color", {
   ),
 });
 
+function updateSearchHighlighting() {
+    const dynamicRange = categories.map(({ label }) => {
+        const baseColor = colorsByGroup.get(label) ?? "#888888ff";
+
+        if (currentSearchTerm.length === 0) {
+            return baseColor; 
+        }
+        const isMatch = labels.some((label, index) => {
+            console.log(`Checking label: ${label}, group: ${groups[index]}, match: ${isMatch}`);
+
+            return label.toLowerCase().includes(currentSearchTerm) && groups[index] === label;
+        });
+
+        if (isMatch) {
+            return baseColor; 
+        } else {
+            return baseColor.substring(0, 7) + "1a"; 
+        }
+    });
+
+    helios.behavior.mappers.setChannelConfig("node", "color", {
+        type: "categorical",
+        attributes: "group",
+        domain: categories.map(({ id }) => id),
+        range: dynamicRange,
+    });
+}
 function updateNetworkVisuals() {
     const dynamicRange = categories.map(({ label }) => {
         const baseColor = colorsByGroup.get(label) ?? "#888888ff";
-        
+
         if (highlightedGroup.length === 0) {
             return baseColor; 
         }
-        
         if (highlightedGroup.includes(label)) {
             return baseColor;
         } else {
             return baseColor.substring(0, 7) + "1a"; 
         }
+        
     });
 
     // Push the updated color array back to Helios
@@ -310,7 +339,7 @@ function updateNetworkVisuals() {
 }
 
 function isNodeActive(nodeIndex) {
-    if (highlightedGroup.length === 0) return true; 
+    if (highlightedGroup.length === 0) return true;
     
     const nodeGroup = groups[nodeIndex];
     return highlightedGroup.includes(nodeGroup);
@@ -370,6 +399,7 @@ colorDomains.forEach(domainValue => {
                 return highlightedGroup.includes(text) ? 1.0 : 0.1;
             });
         updateNetworkVisuals();
+
         });
     });
 //----ADDING NEW FEATURES----
@@ -455,6 +485,7 @@ if (searchInput) {
         if (clearBtn) {
             clearBtn.style.display = currentSearchTerm.length > 0 ? "block" : "none";
         }
+        updateSearchHighlighting();
     });
 }
 
@@ -463,6 +494,7 @@ if (clearBtn) {
         if (searchInput) searchInput.value = ""; 
         currentSearchTerm = ""; 
         clearBtn.style.display = "none"; 
+        updateSearchHighlighting();
     });
 }
 
