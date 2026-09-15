@@ -287,36 +287,10 @@ helios.behavior.mappers.setChannelConfig("node", "color", {
   ),
 });
 
-function updateSearchHighlighting() {
-    const dynamicRange = categories.map(({ label }) => {
-        const baseColor = colorsByGroup.get(label) ?? "#888888ff";
-
-        if (currentSearchTerm.length === 0) {
-            return baseColor; 
-        }
-        const isMatch = labels.some((label, index) => {
-            console.log(`Checking label: ${label}, group: ${groups[index]}, match: ${isMatch}`);
-
-            return label.toLowerCase().includes(currentSearchTerm) && groups[index] === label;
-        });
-
-        if (isMatch) {
-            return baseColor; 
-        } else {
-            return baseColor.substring(0, 7) + "1a"; 
-        }
-    });
-
-    helios.behavior.mappers.setChannelConfig("node", "color", {
-        type: "categorical",
-        attributes: "group",
-        domain: categories.map(({ id }) => id),
-        range: dynamicRange,
-    });
-}
 function updateNetworkVisuals() {
     const dynamicRange = categories.map(({ label }) => {
         const baseColor = colorsByGroup.get(label) ?? "#888888ff";
+        console.log(`Current highlighted groups: [${highlightedGroup.join(", ")}], Label: "${label}"`);
 
         if (highlightedGroup.length === 0) {
             return baseColor; 
@@ -433,6 +407,8 @@ helios.on(EVENTS.NODE_CLICK, ({ detail }) => {
   // Toggle the pinned node
   if (pinnedNodeIndex === detail.index) {
     pinnedNodeIndex = null;
+    updateInfoBox(null);
+    infoBox.style("visibility", "hidden");
   } else {
     pinnedNodeIndex = detail.index;
     console.log("pinnedNodeIndex:", pinnedNodeIndex);
@@ -445,6 +421,14 @@ helios.on(EVENTS.NODE_CLICK, ({ detail }) => {
     animate: true,
     zoomScale: 1.35,
   });
+});
+
+//background click to unpin
+helios.on(EVENTS.GRAPH_CLICK, () => {
+    console.log("background clicked");
+    pinnedNodeIndex = null;
+    updateInfoBox(null);
+    infoBox.style("visibility", "hidden");
 });
 
 // 2. HOVER EVENT
@@ -464,21 +448,20 @@ helios.on(EVENTS.NODE_HOVER, ({ detail }) => {
     } else {
       // Otherwise, clear the info box completely
       updateInfoBox(null);
+      infoBox.style("visibility", "hidden");
     }
   }
 });
 
-helios.on(EVENTS.NODE_DBLCLICK, () => {
-  pinnedNodeIndex = null;
-  updateInfoBox(null);
-  console.log("pinnedNodeIndex:", pinnedNodeIndex);
-});
 
 helios.nodeSizeScale(0.5);
 //---SEARCH BAR LOGIC---
+
 const searchInput = document.getElementById("author-search");
 const clearBtn = document.getElementById("clear-search");
+const searchContainer = document.getElementById("search-container");
 
+/*
 if (searchInput) {
     searchInput.addEventListener("input", (e) => {
         currentSearchTerm = e.target.value.toLowerCase();
@@ -497,6 +480,7 @@ if (clearBtn) {
         updateSearchHighlighting();
     });
 }
+    */
 
 
 
