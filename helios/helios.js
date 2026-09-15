@@ -312,6 +312,7 @@ function updateNetworkVisuals() {
     });
 }
 
+
 function isNodeActive(nodeIndex) {
     if (highlightedGroup.length === 0) return true;
     
@@ -461,7 +462,7 @@ const searchInput = document.getElementById("author-search");
 const clearBtn = document.getElementById("clear-search");
 const searchContainer = document.getElementById("search-container");
 
-/*
+
 if (searchInput) {
     searchInput.addEventListener("input", (e) => {
         currentSearchTerm = e.target.value.toLowerCase();
@@ -480,7 +481,7 @@ if (clearBtn) {
         updateSearchHighlighting();
     });
 }
-    */
+    
 
 
 
