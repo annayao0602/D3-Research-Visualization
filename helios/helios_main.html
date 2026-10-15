@@ -264,6 +264,62 @@
     #clear-search:hover {
         color: #333;
     }
+
+    #search-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        width: 250px;
+        max-height: 320px;
+        overflow-y: auto;
+        margin-top: 6px;
+        padding: 4px 0;
+        border-radius: 12px;
+        background-color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        box-sizing: border-box;
+        display: none;
+    }
+
+    .search-summary {
+        padding: 6px 14px;
+        font-size: 12px;
+        color: #777;
+    }
+
+    .search-option {
+        display: flex;
+        align-items: center;
+        padding: 6px 14px;
+        cursor: pointer;
+    }
+
+    .search-option.active {
+        background-color: rgba(62, 113, 168, 0.12);
+    }
+
+    .search-option .legend-color-box {
+        flex-shrink: 0;
+    }
+
+    .search-option-text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .search-option-name {
+        font-size: 14px;
+        font-weight: bold;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .search-option-field {
+        font-size: 11px;
+        color: #777;
+    }
     
 </style>
 
@@ -279,8 +335,11 @@
 
 <div id="netviz"></div>
 <div id="search-container">
-    <input type="text" id="author-search" placeholder="Search authors...">
+    <input type="text" id="author-search" placeholder="Search authors..."
+           autocomplete="off" role="combobox" aria-controls="search-dropdown"
+           aria-expanded="false" aria-autocomplete="list">
     <button id="clear-search" aria-label="Clear search">&times;</button>
+    <div id="search-dropdown" role="listbox" aria-label="Matching authors"></div>
 </div>
 <div id="legend">
     <h3>Research Fields</h3>

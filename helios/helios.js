@@ -115,6 +115,7 @@ function hexToRgbNormalized(hex) {
 //---GLOBAL STATE VARIABLES----
 let highlightedGroup = [];
 let currentSearchTerm = "";
+let pinnedNodeIndex = null;
 
 //--- TUTORIAL / HELP LOGIC ---
 const tutorialModal = document.getElementById("tutorial-modal");
@@ -287,38 +288,57 @@ helios.behavior.mappers.setChannelConfig("node", "color", {
   ),
 });
 
+// Each node gets a "colorKey": its group's category id when active, or
+// id + DIM_OFFSET when dimmed. This lets both the legend filter and the search
+// bar dim individual nodes through a single categorical color mapping.
+const DIM_OFFSET = Math.max(...categories.map(({ id }) => id)) + 1;
+const categoryIdByLabel = new Map(categories.map(({ id, label }) => [label, id]));
+
+function matchesSearch(nodeIndex) {
+    if (currentSearchTerm === "") return true;
+    return labels[nodeIndex].toLowerCase().includes(currentSearchTerm);
+}
+
+function matchesGroup(nodeIndex) {
+    if (highlightedGroup.length === 0) return true;
+    return highlightedGroup.includes(groups[nodeIndex]);
+}
+
+// A node is active (highlighted + interactive) only if it passes both filters
+function isNodeActive(nodeIndex) {
+    return matchesGroup(nodeIndex) && matchesSearch(nodeIndex);
+}
+
 function updateNetworkVisuals() {
-    const dynamicRange = categories.map(({ label }) => {
-        const baseColor = colorsByGroup.get(label) ?? "#888888ff";
-        console.log(`Current highlighted groups: [${highlightedGroup.join(", ")}], Label: "${label}"`);
-
-        if (highlightedGroup.length === 0) {
-            return baseColor; 
-        }
-        if (highlightedGroup.includes(label)) {
-            return baseColor;
-        } else {
-            return baseColor.substring(0, 7) + "1a"; 
-        }
-        
+    const colorKeys = groups.map((group, index) => {
+        const id = categoryIdByLabel.get(group);
+        return isNodeActive(index) ? id : id + DIM_OFFSET;
     });
+    network.nodeAttribute("colorKey", colorKeys, { type: "integer" });
 
-    // Push the updated color array back to Helios
+    const baseRange = categories.map(({ label }) => colorsByGroup.get(label) ?? "#888888ff");
+    const dimmedRange = baseRange.map(color => color.substring(0, 7) + "1a");
+
+    // Push the updated color mapping back to Helios (this also re-reads colorKey)
     helios.behavior.mappers.setChannelConfig("node", "color", {
         type: "categorical",
-        attributes: "group",
-        domain: categories.map(({ id }) => id),
-        range: dynamicRange,
+        attributes: "colorKey",
+        domain: [
+            ...categories.map(({ id }) => id),
+            ...categories.map(({ id }) => id + DIM_OFFSET),
+        ],
+        range: [...baseRange, ...dimmedRange],
     });
+
+    // Drop the pinned node if it was filtered out
+    if (pinnedNodeIndex !== null && !isNodeActive(pinnedNodeIndex)) {
+        pinnedNodeIndex = null;
+        updateInfoBox(null);
+        helios.behavior.selection?.clearSelection();
+    }
 }
 
-
-function isNodeActive(nodeIndex) {
-    if (highlightedGroup.length === 0) return true;
-    
-    const nodeGroup = groups[nodeIndex];
-    return highlightedGroup.includes(nodeGroup);
-}
+updateNetworkVisuals();
 
 helios.nodeSizeScale(0.5); 
 helios.behavior.labels.labels({ enabled: false, source: "label" });
@@ -400,7 +420,6 @@ function updateInfoBox(label, field) {
 }
 
 // --- NODE INTERACTIONS ---
-let pinnedNodeIndex = null;
 // TODO: after checking that the node is active, info box should appear and update with labels and fields.
 helios.on(EVENTS.NODE_CLICK, ({ detail }) => {
   if (!isNodeActive(detail.index)) return;
@@ -424,12 +443,41 @@ helios.on(EVENTS.NODE_CLICK, ({ detail }) => {
   });
 });
 
-//background click to unpin
-helios.on(EVENTS.GRAPH_CLICK, () => {
-    console.log("background clicked");
+// Helios selects any clicked node on its own (built-in selection behavior).
+// Undo that for dimmed nodes so they don't react, keeping the pinned node selected.
+function restoreSelection() {
+    const selection = helios.behavior.selection;
+    if (!selection) return;
+    if (pinnedNodeIndex !== null) {
+        selection.selectOnly("node", pinnedNodeIndex);
+    } else {
+        selection.clearSelection();
+    }
+}
+
+function isDimmedNodeHit(detail) {
+    return detail.kind === "node" && detail.index >= 0 && !isNodeActive(detail.index);
+}
+
+// GRAPH_CLICK fires for every click (nodes included), before NODE_CLICK
+helios.on(EVENTS.GRAPH_CLICK, ({ detail }) => {
+    if (isDimmedNodeHit(detail)) {
+        restoreSelection();
+        return;
+    }
+    if (detail.kind === "node" && detail.index >= 0) return; // handled by NODE_CLICK
+
+    // Background click: unpin
     pinnedNodeIndex = null;
     updateInfoBox(null);
     infoBox.style("visibility", "hidden");
+});
+
+// Double-clicking a dimmed node would otherwise select and center on it
+helios.on(EVENTS.GRAPH_DBLCLICK, ({ detail }) => {
+    if (!isDimmedNodeHit(detail)) return;
+    restoreSelection();
+    helios.behavior.selection?.centerSelectedNodesOrNetwork();
 });
 
 // 2. HOVER EVENT
@@ -439,6 +487,10 @@ helios.on(EVENTS.NODE_HOVER, ({ detail }) => {
     updateInfoBox(labels[detail.index], fields[detail.index]);
     d3Select("#netviz").style("cursor", "pointer");
   } 
+  else if (detail.state === "in") {
+    // Dimmed node: cancel Helios's built-in hover highlight so it doesn't react
+    helios.hoverNodeState(null, 0);
+  }
   else if (detail.state === "out") {
     // HOVER OUT: 
     d3Select("#netviz").style("cursor", "default");
@@ -460,29 +512,171 @@ helios.nodeSizeScale(0.5);
 
 const searchInput = document.getElementById("author-search");
 const clearBtn = document.getElementById("clear-search");
-const searchContainer = document.getElementById("search-container");
+const searchDropdown = document.getElementById("search-dropdown");
 
+const MAX_DROPDOWN_ITEMS = 50;
+let dropdownMatches = [];   // node indices currently listed in the dropdown
+let activeOptionIndex = -1; // keyboard-highlighted row (-1 = none)
+
+function getActiveNodeIndices() {
+    return labels.map((_, index) => index).filter(isNodeActive);
+}
+
+// Names that start with the search term come first, then alphabetical
+function sortMatches(indices) {
+    return indices.slice().sort((a, b) => {
+        const aPrefix = labels[a].toLowerCase().startsWith(currentSearchTerm) ? 0 : 1;
+        const bPrefix = labels[b].toLowerCase().startsWith(currentSearchTerm) ? 0 : 1;
+        return aPrefix - bPrefix || labels[a].localeCompare(labels[b]);
+    });
+}
+
+// Pin an author, show their info box, and pan/zoom the camera to them
+function focusAuthor(nodeIndex) {
+    pinnedNodeIndex = nodeIndex;
+    updateInfoBox(labels[nodeIndex], fields[nodeIndex]);
+    helios.behavior.selection?.selectOnly("node", nodeIndex);
+    helios.cameraTargetNodes([nodeIndex], {
+        animate: true,
+        zoomScale: 1.35,
+    });
+}
+
+function closeDropdown() {
+    if (!searchDropdown) return;
+    searchDropdown.style.display = "none";
+    searchInput?.setAttribute("aria-expanded", "false");
+    activeOptionIndex = -1;
+}
+
+function setActiveOption(index) {
+    const options = searchDropdown.querySelectorAll(".search-option");
+    activeOptionIndex = index;
+    options.forEach((option, i) => {
+        option.classList.toggle("active", i === index);
+        option.setAttribute("aria-selected", i === index ? "true" : "false");
+    });
+    if (index >= 0) options[index].scrollIntoView({ block: "nearest" });
+}
+
+function selectDropdownOption(index) {
+    const nodeIndex = dropdownMatches[index];
+    if (nodeIndex === undefined) return;
+
+    // Narrow the search to the chosen name so it is the highlighted node
+    searchInput.value = labels[nodeIndex];
+    currentSearchTerm = labels[nodeIndex].trim().toLowerCase();
+    updateNetworkVisuals();
+    closeDropdown();
+    focusAuthor(nodeIndex);
+}
+
+function renderDropdown() {
+    if (!searchDropdown) return;
+    if (currentSearchTerm === "") {
+        dropdownMatches = [];
+        closeDropdown();
+        return;
+    }
+
+    const matches = sortMatches(getActiveNodeIndices());
+    dropdownMatches = matches.slice(0, MAX_DROPDOWN_ITEMS);
+    activeOptionIndex = -1;
+
+    const dropdown = d3Select(searchDropdown);
+    dropdown.selectAll("*").remove();
+
+    dropdown.append("div")
+        .attr("class", "search-summary")
+        .text(matches.length === 0
+            ? "No authors found"
+            : `${matches.length} author${matches.length === 1 ? "" : "s"} found`);
+
+    dropdownMatches.forEach((nodeIndex, i) => {
+        const option = dropdown.append("div")
+            .attr("class", "search-option")
+            .attr("role", "option")
+            .attr("aria-selected", "false")
+            // mousedown (not click) so the input doesn't lose focus first
+            .on("mousedown", (event) => {
+                event.preventDefault();
+                selectDropdownOption(i);
+            })
+            .on("mouseenter", () => setActiveOption(i));
+
+        option.append("span")
+            .attr("class", "legend-color-box")
+            .style("background-color", colorScale(groups[nodeIndex]));
+        const text = option.append("span").attr("class", "search-option-text");
+        text.append("span").attr("class", "search-option-name").text(labels[nodeIndex]);
+        text.append("span").attr("class", "search-option-field").text(fields[nodeIndex] ?? "");
+    });
+
+    if (matches.length > MAX_DROPDOWN_ITEMS) {
+        dropdown.append("div")
+            .attr("class", "search-summary")
+            .text(`Showing first ${MAX_DROPDOWN_ITEMS} · keep typing to narrow`);
+    }
+
+    searchDropdown.style.display = "block";
+    searchInput.setAttribute("aria-expanded", "true");
+}
+
+function updateSearchHighlighting() {
+    updateNetworkVisuals();
+    renderDropdown();
+}
+
+function clearSearch() {
+    if (searchInput) searchInput.value = "";
+    currentSearchTerm = "";
+    if (clearBtn) clearBtn.style.display = "none";
+    updateSearchHighlighting();
+}
 
 if (searchInput) {
     searchInput.addEventListener("input", (e) => {
-        currentSearchTerm = e.target.value.toLowerCase();
+        currentSearchTerm = e.target.value.trim().toLowerCase();
         if (clearBtn) {
-            clearBtn.style.display = currentSearchTerm.length > 0 ? "block" : "none";
+            clearBtn.style.display = e.target.value.length > 0 ? "block" : "none";
         }
         updateSearchHighlighting();
+    });
+
+    searchInput.addEventListener("focus", renderDropdown);
+    searchInput.addEventListener("blur", closeDropdown);
+
+    searchInput.addEventListener("keydown", (e) => {
+        const dropdownOpen = searchDropdown?.style.display === "block";
+
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            if (!dropdownOpen) renderDropdown();
+            if (dropdownMatches.length === 0) return;
+            e.preventDefault();
+            const step = e.key === "ArrowDown" ? 1 : -1;
+            const next = (activeOptionIndex + step + dropdownMatches.length) % dropdownMatches.length;
+            setActiveOption(next);
+        } else if (e.key === "Enter" && currentSearchTerm !== "") {
+            if (activeOptionIndex >= 0) {
+                selectDropdownOption(activeOptionIndex);
+            } else if (dropdownMatches.length === 1) {
+                selectDropdownOption(0);
+            } else {
+                // No name chosen: zoom the camera to frame all matching authors
+                const matches = getActiveNodeIndices();
+                if (matches.length > 0) {
+                    helios.cameraTargetNodes(matches, { animate: true, zoomScale: 1.35 });
+                }
+                closeDropdown();
+            }
+        } else if (e.key === "Escape") {
+            // First Escape closes the dropdown, second clears the search
+            if (dropdownOpen) closeDropdown();
+            else clearSearch();
+        }
     });
 }
 
 if (clearBtn) {
-    clearBtn.addEventListener("click", () => {
-        if (searchInput) searchInput.value = ""; 
-        currentSearchTerm = ""; 
-        clearBtn.style.display = "none"; 
-        updateSearchHighlighting();
-    });
+    clearBtn.addEventListener("click", clearSearch);
 }
-    
-
-
-
-
